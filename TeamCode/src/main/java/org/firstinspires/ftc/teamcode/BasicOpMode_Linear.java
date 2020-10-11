@@ -67,6 +67,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
         while (opModeIsActive()){
             // debugging telemetry.
             telemetry.addLine( "Touch Sensor Value: "+ motorOnButton.getState());
+            telemetry.addLine("Motor Encoder Value: "+ leftDrive.getCurrentPosition() );
             telemetry.update();
             // Check if the touch sensor is pressed, if it is, turn on the motor named leftDrive
             //Otherwise set the power to 0
