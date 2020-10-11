@@ -29,13 +29,12 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -56,7 +55,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
-
+    private DigitalChannel motorOnButton = null;
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -66,11 +65,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
         leftDrive  = hardwareMap.get(DcMotor.class, "leftDrive");
-
+        motorOnButton = hardwareMap.get(DigitalChannel.class, "motorOnButton");
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
-
+        motorOnButton.setMode(DigitalChannel.Mode.INPUT);
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -79,14 +78,18 @@ public class BasicOpMode_Linear extends LinearOpMode {
         while (opModeIsActive()) {
 
             // Setup a variable for each drive wheel to save power level for telemetry
-            double leftPower;
+          telemetry.addLine( "Touch Sensor Value: "+ motorOnButton.getState());
 
-            double drive = 1;
+          telemetry.update();
+            if(motorOnButton.getState() == false){
+                leftDrive.setPower(1);}
+            else {
+                leftDrive.setPower(0);
+            }
 
-            leftPower    = drive ;
 
             // Send calculated power to wheels
-            leftDrive.setPower(leftPower);
+
 
         }
     }
