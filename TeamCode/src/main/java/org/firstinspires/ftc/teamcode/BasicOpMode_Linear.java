@@ -36,18 +36,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-/**
- * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
- * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
- * of the FTC Driver Station. When an selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all linear OpModes contain.
- *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
- */
 
 @TeleOp(name="Test Program", group="Linear Opmode")
 public class BasicOpMode_Linear extends LinearOpMode {
@@ -61,34 +49,32 @@ public class BasicOpMode_Linear extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
+        // Initialize the hardware variables.
+
         leftDrive  = hardwareMap.get(DcMotor.class, "leftDrive");
         motorOnButton = hardwareMap.get(DigitalChannel.class, "motorOnButton");
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        //Specify that motorOnButton is an input
         motorOnButton.setMode(DigitalChannel.Mode.INPUT);
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
-
-            // Setup a variable for each drive wheel to save power level for telemetry
-          telemetry.addLine( "Touch Sensor Value: "+ motorOnButton.getState());
-
-          telemetry.update();
+        while (opModeIsActive()){
+            // debugging telemetry.
+            telemetry.addLine( "Touch Sensor Value: "+ motorOnButton.getState());
+            telemetry.update();
+            // Check if the touch sensor is pressed, if it is, turn on the motor named leftDrive
+            //Otherwise set the power to 0
             if(motorOnButton.getState() == false){
                 leftDrive.setPower(1);}
             else {
                 leftDrive.setPower(0);
             }
-
-
-            // Send calculated power to wheels
 
 
         }
