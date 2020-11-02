@@ -33,29 +33,51 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+
+import java.util.Set;
 
 
-@TeleOp(name="Test Program", group="Linear Opmode")
-public class BasicOpMode_Linear extends LinearOpMode {
+@TeleOp(name="Simple Drive Program", group="Linear Opmode")
+public class Driver_Control_Test extends LinearOpMode {
+    
+    //Declare some variables to hold the driver input and motor power
+    double left;
+    double right;
+    double drive;
+    double turn;
+    double launcherpower;
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DigitalChannel motorOnButton = null;
+    
+    //Declare Motors
+    private DcMotor leftDrive;
+    private DcMotor rightDrive;
+    private DcMotor launcher;
+    
+    // Declare Button
+    private DigitalChannel motorOnButton;
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         // Initialize the hardware variables.
-
         leftDrive  = hardwareMap.get(DcMotor.class, "leftDrive");
+        rightDrive = hardwareMap.get(DcMotor.class,"rightDrive");
+        launcher = hardwareMap.get(DcMotor.class,"ringLauncher");
         motorOnButton = hardwareMap.get(DigitalChannel.class, "motorOnButton");
+        
+        // Set the direction of the motors
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        launcher.setDirection(DcMotorSimple.Direction.FORWARD);
         //Specify that motorOnButton is an input
         motorOnButton.setMode(DigitalChannel.Mode.INPUT);
 
@@ -65,19 +87,38 @@ public class BasicOpMode_Linear extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()){
-            // debugging telemetry.
-            telemetry.addLine( "Touch Sensor Value: "+ motorOnButton.getState());
-            telemetry.addLine("Motor Encoder Value: "+ leftDrive.getCurrentPosition() );
-            telemetry.update();
-            // Check if the touch sensor is pressed, if it is, turn on the motor named leftDrive
-            //Otherwise set the power to 0
-            if(motorOnButton.getState() == false){
-                leftDrive.setPower(1);}
-            else {
-                leftDrive.setPower(0);
+
+            // read driver input
+            drive = -gamepad1.left_stick_y;
+            turn  =  gamepad1.right_stick_x;
+            
+            // if the A button is pressed run the launcher forwards
+            // if the Y button is pressed run it backwards
+            if(gamepad1.a == true){
+                launcherpower = 1.0;
+            }
+            else if(gamepad1.y == true){
+                launcherpower = -1.0;
+            }
+            else{
+                launcherpower = 0.0;
             }
 
-
+            // Combine drive and turn for blended motion and make sure the value is safe
+            left    = Range.clip(drive + turn, -1.0, 1.0) ;
+            right   = Range.clip(drive - turn, -1.0, 1.0) ;
+            launcherpower = Range.clip(launcherpower,-1.0,1.0);
+            
+            //set the motor power
+            rightDrive.setPower(right);
+            leftDrive.setPower(left);
+            launcher.setPower(launcherpower);
+            
+            // debugging telemetry.
+            telemetry.addLine( "Touch Sensor Value: "+ motorOnButton.getState());
+            telemetry.addLine("Left Motor Encoder Value: "+ leftDrive.getCurrentPosition() );
+            telemetry.addLine("Right Motor Encoder Value: "+ rightDrive.getCurrentPosition() );
+            telemetry.update();
         }
     }
 }
