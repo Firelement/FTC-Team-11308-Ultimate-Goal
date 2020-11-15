@@ -95,10 +95,10 @@ public class Mechanum_Wheel_Drive extends LinearOpMode {
 
             // Assign the power variables to the Game pad inputs
             // currently strafing is not implemented
-            leftFrontPower = drive + rotate;
-            leftRearPower = drive + rotate;
-            rightFrontPower = drive - rotate;
-            rightRearPower = drive - rotate;
+            leftFrontPower = drive + rotate + strafe;
+            leftRearPower = drive + rotate - strafe;
+            rightFrontPower = drive - rotate - strafe;
+            rightRearPower = drive - rotate + strafe;
 
             // make sure that the power variables are within -1.0 and 1.0
             leftFrontPower    = Range.clip(leftFrontPower, -1.0, 1.0) ;
