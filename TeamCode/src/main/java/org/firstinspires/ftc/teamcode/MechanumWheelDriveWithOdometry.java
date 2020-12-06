@@ -39,7 +39,6 @@ import com.qualcomm.robotcore.util.Range;
 
 
 @TeleOp(name="Mechanum Wheel Odometry", group="Linear Opmode")
-@Disabled
 public class MechanumWheelDriveWithOdometry extends LinearOpMode {
 
     // Declare Motor Classes
