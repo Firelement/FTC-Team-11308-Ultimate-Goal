@@ -116,13 +116,8 @@ public class MechanumWheelDriveWithOdometry extends LinearOpMode {
             leftRearDrive.setPower(leftRearPower);
             rightRearDrive.setPower(rightRearPower);
 
-            telemetry.addData("Y-Position",OdometryWheelX.getCurrentPosition());
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Left Front Motor Power:",leftFrontPower);
-            telemetry.addData("Right Front Motor Power:",rightFrontPower);
-            telemetry.addData("Left Rear Motor Power:",leftRearPower);
-            telemetry.addData("Right Rear Motor Power:",rightRearPower);
+            //Display the y-position of the robot through odometry
+            telemetry.addData("Y-Position: ",OdometryWheelX.getCurrentPosition());
             telemetry.update();
         }
     }
