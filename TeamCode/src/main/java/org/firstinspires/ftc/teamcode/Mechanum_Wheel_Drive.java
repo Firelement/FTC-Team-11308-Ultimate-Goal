@@ -89,8 +89,8 @@ public class Mechanum_Wheel_Drive extends LinearOpMode {
             // These can be changed to what ever the driver wants it to be
             //some of these may need to be made negative depending  on the gamepad
             drive = gamepad1.right_stick_y;
-            rotate = gamepad1.left_stick_x;
-            strafe = gamepad1.right_stick_x;
+            rotate = -gamepad1.left_stick_x;
+            strafe = -gamepad1.right_stick_x;
 
             // Assign the power variables to the Game pad inputs
             // currently strafing is not implemented
