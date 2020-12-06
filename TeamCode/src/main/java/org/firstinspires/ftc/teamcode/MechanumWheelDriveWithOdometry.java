@@ -64,10 +64,10 @@ public class MechanumWheelDriveWithOdometry extends LinearOpMode {
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         // I believe that motors on the same side of the robot need to run in the same direction
-        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftRearDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightRearDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftRearDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightRearDrive.setDirection(DcMotor.Direction.FORWARD);
         OdometryWheelX.setDirection(DcMotor.Direction.FORWARD);
 
         // Wait for the game to start (driver presses PLAY)
@@ -93,8 +93,8 @@ public class MechanumWheelDriveWithOdometry extends LinearOpMode {
             // These can be changed to what ever the driver wants it to be
             //some of these may need to be made negative depending  on the gamepad
             drive = gamepad1.right_stick_y;
-            rotate = gamepad1.right_stick_x;
-            strafe = gamepad1.left_stick_x;
+            rotate = gamepad1.left_stick_x;
+            strafe = gamepad1.right_stick_x;
 
             // Assign the power variables to the Game pad inputs
             // currently strafing is not implemented
