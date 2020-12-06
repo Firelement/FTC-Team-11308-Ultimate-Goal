@@ -38,7 +38,6 @@ import com.qualcomm.robotcore.util.Range;
 
 
 @TeleOp(name="Mechanum Wheel Driver Control", group="Linear Opmode")
-@Disabled
 public class Mechanum_Wheel_Drive extends LinearOpMode {
 
     // Declare Motor Classes
