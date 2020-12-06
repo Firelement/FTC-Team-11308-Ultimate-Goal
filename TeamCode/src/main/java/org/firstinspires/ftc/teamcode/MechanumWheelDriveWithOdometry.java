@@ -38,7 +38,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 
-@TeleOp(name="Mechanum Wheel Driver Control", group="Linear Opmode")
+@TeleOp(name="Mechanum Wheel Odometry", group="Linear Opmode")
 @Disabled
 public class MechanumWheelDriveWithOdometry extends LinearOpMode {
 
