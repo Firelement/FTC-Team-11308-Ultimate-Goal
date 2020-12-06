@@ -33,12 +33,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 
-@TeleOp(name="Mechanum Wheel Driver Control", group="Linear Opmode")
-public class Mechanum_Wheel_Drive extends LinearOpMode {
+@TeleOp(name="Mechanum Wheel Odometry", group="Linear Opmode")
+public class MechanumWheelDriveWithOdometry extends LinearOpMode {
 
     // Declare Motor Classes
     private ElapsedTime runtime = new ElapsedTime();
@@ -46,6 +47,7 @@ public class Mechanum_Wheel_Drive extends LinearOpMode {
     private DcMotor rightFrontDrive;
     private DcMotor leftRearDrive;
     private DcMotor rightRearDrive;
+    private DcMotor OdometryWheelX;
 
     @Override
     public void runOpMode() {
@@ -57,6 +59,7 @@ public class Mechanum_Wheel_Drive extends LinearOpMode {
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
         leftRearDrive  = hardwareMap.get(DcMotor.class, "left_rear_drive");
         rightRearDrive = hardwareMap.get(DcMotor.class, "right_rear_drive");
+        OdometryWheelX = hardwareMap.get(DcMotor.class, "Odometry_Wheel_X");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -65,6 +68,7 @@ public class Mechanum_Wheel_Drive extends LinearOpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         leftRearDrive.setDirection(DcMotor.Direction.REVERSE);
         rightRearDrive.setDirection(DcMotor.Direction.FORWARD);
+        OdometryWheelX.setDirection(DcMotor.Direction.FORWARD);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -111,12 +115,8 @@ public class Mechanum_Wheel_Drive extends LinearOpMode {
             leftRearDrive.setPower(leftRearPower);
             rightRearDrive.setPower(rightRearPower);
 
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Left Front Motor Power:",leftFrontPower);
-            telemetry.addData("Right Front Motor Power:",rightFrontPower);
-            telemetry.addData("Left Rear Motor Power:",leftRearPower);
-            telemetry.addData("Right Rear Motor Power:",rightRearPower);
+            //Display the y-position of the robot through odometry
+            telemetry.addData("Y-Position: ",OdometryWheelX.getCurrentPosition());
             telemetry.update();
         }
     }
