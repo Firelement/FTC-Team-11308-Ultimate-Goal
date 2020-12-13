@@ -55,6 +55,10 @@ public class WheelLauncherTestProgram extends LinearOpMode {
     boolean oldLeftBumper = false;
     boolean oldRightBumper = false;
 
+    double AvgRpms = 0;
+    double storedRpms = 0;
+    int number_of_stored_RPM_readings = 0;
+
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -97,8 +101,18 @@ public class WheelLauncherTestProgram extends LinearOpMode {
             flywheel.setPower(currentPower);
 
             //calculate the rpms
-            double rpms = (((flywheel.getCurrentPosition()-lastencoder)/COUNTS_PER_MOTOR_REV)/(runtime.milliseconds() -lastchecktime));
-            rpms*= 3600000;
+            double observedrpms = (((flywheel.getCurrentPosition()-lastencoder)/COUNTS_PER_MOTOR_REV)/(runtime.milliseconds() -lastchecktime));
+            observedrpms*= 3600000;
+
+            //we only need to calculate rpms every so often. So we will quene them up and calculate the average rpms after we have 200 readings.
+            if(number_of_stored_RPM_readings <200){
+                storedRpms += observedrpms;
+                number_of_stored_RPM_readings++;
+            }
+            if(number_of_stored_RPM_readings >= 200){
+                AvgRpms = (storedRpms/number_of_stored_RPM_readings);
+                number_of_stored_RPM_readings = 0;
+            }
 
             //save the current time and encoder value;
             lastencoder = flywheel.getCurrentPosition();
@@ -106,7 +120,7 @@ public class WheelLauncherTestProgram extends LinearOpMode {
 
             //send the power and rpms to the driver station
             telemetry.addLine("Motor Power: "+ ((-currentPower)*100)+"%" );
-            telemetry.addLine("Rpms :"+ rpms);
+            telemetry.addLine("Rpms :"+ AvgRpms);
             telemetry.update();
 
         }
