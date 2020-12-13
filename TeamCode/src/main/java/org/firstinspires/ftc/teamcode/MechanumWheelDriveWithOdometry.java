@@ -47,8 +47,7 @@ public class MechanumWheelDriveWithOdometry extends LinearOpMode {
     private DcMotor rightFrontDrive;
     private DcMotor leftRearDrive;
     private DcMotor rightRearDrive;
-    private DcMotor OdometryWheelX;
-
+    private DcMotor intakeWheel1;
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -59,7 +58,7 @@ public class MechanumWheelDriveWithOdometry extends LinearOpMode {
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
         leftRearDrive  = hardwareMap.get(DcMotor.class, "left_rear_drive");
         rightRearDrive = hardwareMap.get(DcMotor.class, "right_rear_drive");
-        OdometryWheelX = hardwareMap.get(DcMotor.class, "Odometry_Wheel_X");
+        intakeWheel1 = hardwareMap.get(DcMotor.class, "intake_wheel_1");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -68,7 +67,10 @@ public class MechanumWheelDriveWithOdometry extends LinearOpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         leftRearDrive.setDirection(DcMotor.Direction.REVERSE);
         rightRearDrive.setDirection(DcMotor.Direction.FORWARD);
-        OdometryWheelX.setDirection(DcMotor.Direction.FORWARD);
+        intakeWheel1.setDirection(DcMotor.Direction.FORWARD);
+
+        //Set intake wheel to not run using encoder so that we can use the encoder for odometry
+        intakeWheel1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -116,7 +118,7 @@ public class MechanumWheelDriveWithOdometry extends LinearOpMode {
             rightRearDrive.setPower(rightRearPower);
 
             //Display the y-position of the robot through odometry
-            telemetry.addData("Y-Position: ",OdometryWheelX.getCurrentPosition());
+            telemetry.addData("Y-Position: ", intakeWheel1.getCurrentPosition());
             telemetry.update();
         }
     }
