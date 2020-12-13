@@ -69,8 +69,9 @@ public class MechanumWheelDriveWithOdometry extends LinearOpMode {
         rightRearDrive.setDirection(DcMotor.Direction.FORWARD);
         intakeWheel1.setDirection(DcMotor.Direction.FORWARD);
 
-        //Set intake wheel to not run using encoder so that we can use the encoder for odometry
+        //Set wheels to not run using encoder so that we can use the encoder for odometry
         intakeWheel1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+      //  leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -119,6 +120,7 @@ public class MechanumWheelDriveWithOdometry extends LinearOpMode {
 
             //Display the y-position of the robot through odometry
             telemetry.addData("Y-Position: ", intakeWheel1.getCurrentPosition());
+            //telemetry.addData("Y-Position: ", leftFrontDrive.getCurrentPosition());
             telemetry.update();
         }
     }
