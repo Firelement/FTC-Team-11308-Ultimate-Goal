@@ -50,7 +50,7 @@ public class WheelLauncherTestProgram extends LinearOpMode {
     private double currentPower = 0.0;
 
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
-    static final double     POWER_INCREMENT = 0.1;
+    static final double     POWER_INCREMENT = 0.05;
 
     boolean oldLeftBumper = false;
     boolean oldRightBumper = false;
