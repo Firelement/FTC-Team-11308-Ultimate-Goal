@@ -52,6 +52,9 @@ public class WheelLauncherTestProgram extends LinearOpMode {
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
     static final double     POWER_INCREMENT = 0.1;
 
+    boolean oldLeftBumper = false;
+    boolean oldRightBumper = false;
+
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -74,28 +77,35 @@ public class WheelLauncherTestProgram extends LinearOpMode {
         lastchecktime = runtime.milliseconds();
 
         // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()){
+        while (opModeIsActive()) {
 
-            //allow the user to increment or deincrement the power of the motor
-            if(gamepad1.right_bumper&&currentPower<= 1.0 - POWER_INCREMENT){
-                currentPower +=POWER_INCREMENT;
+            // if the bumpers have changed state
+            if ((oldLeftBumper != gamepad1.left_bumper) ^ (oldRightBumper != gamepad1.right_bumper)){
+
+                //allow the user to increment or decrement the power of the motor
+                if (gamepad1.right_bumper && currentPower <= 1.0 - POWER_INCREMENT) {
+                    currentPower += POWER_INCREMENT;
+                } else if (gamepad1.left_bumper && currentPower >= -1.0 + POWER_INCREMENT) {
+                    currentPower -= POWER_INCREMENT;
+                }
             }
-            else if(gamepad1.left_bumper&&currentPower >= -1.0 + POWER_INCREMENT){
-                currentPower -=POWER_INCREMENT;
-            }
+            oldRightBumper = gamepad1.right_bumper;
+            oldLeftBumper = gamepad1.left_bumper;
             //Saftey Check
+            //currentPower = Math.round(currentPower);
             currentPower = Range.clip(currentPower,-1.0,1.0);
             flywheel.setPower(currentPower);
 
             //calculate the rpms
-            double rpms = ((flywheel.getCurrentPosition()-lastencoder)/COUNTS_PER_MOTOR_REV)/(runtime.milliseconds() -lastchecktime);
+            double rpms = (((flywheel.getCurrentPosition()-lastencoder)/COUNTS_PER_MOTOR_REV)/(runtime.milliseconds() -lastchecktime));
+            rpms*= 3600000;
 
             //save the current time and encoder value;
             lastencoder = flywheel.getCurrentPosition();
             lastchecktime = runtime.milliseconds();
 
             //send the power and rpms to the driver station
-            telemetry.addLine("Motor Power: "+ currentPower );
+            telemetry.addLine("Motor Power: "+ ((-currentPower)*100)+"%" );
             telemetry.addLine("Rpms :"+ rpms);
             telemetry.update();
 
