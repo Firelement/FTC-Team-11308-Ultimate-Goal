@@ -33,6 +33,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -51,7 +52,10 @@ public class WheelLauncherTestProgram extends LinearOpMode {
 
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
     static final double     POWER_INCREMENT = 0.05;
+    static final int MILLISECONDS_PER_MINUTE = 60000;
 
+    //variables that will help find when the bumper changed states from released to pressed
+    //this is necessary so that the power does not increment constantly while the button is held
     boolean oldLeftBumper = false;
     boolean oldRightBumper = false;
     
@@ -64,17 +68,19 @@ public class WheelLauncherTestProgram extends LinearOpMode {
         // Initialize the hardware variables.
 
         flywheel  = hardwareMap.get(DcMotor.class, "flywheel");
-        // Wait for the game to start (driver presses PLAY)
+
+        //reverse the motor
+        flywheel.setDirection(DcMotor.Direction.REVERSE);
 
         //enable the encoder and save the value
         flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lastencoder = flywheel.getCurrentPosition();
 
-
+        // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
-        //set the saved time
+        //save the time
         lastchecktime = runtime.milliseconds();
 
         // run until the end of the match (driver presses STOP)
@@ -90,23 +96,27 @@ public class WheelLauncherTestProgram extends LinearOpMode {
                     currentPower -= POWER_INCREMENT;
                 }
             }
-            oldRightBumper = gamepad1.right_bumper;
-            oldLeftBumper = gamepad1.left_bumper;
-            //Saftey Check
-            //currentPower = Math.round(currentPower);
+
+            //Safety Check
             currentPower = Range.clip(currentPower,-1.0,1.0);
+
+            //set the power of the motor
             flywheel.setPower(currentPower);
 
             //calculate the rpms
             double rpms = (((flywheel.getCurrentPosition()-lastencoder)/COUNTS_PER_MOTOR_REV)/(runtime.milliseconds() -lastchecktime));
-            rpms*= 3600000;
+            rpms*= MILLISECONDS_PER_MINUTE;
 
             //save the current time and encoder value;
             lastencoder = flywheel.getCurrentPosition();
             lastchecktime = runtime.milliseconds();
 
+            //assign the oldbumper variables to the current bumper readings
+            oldRightBumper = gamepad1.right_bumper;
+            oldLeftBumper = gamepad1.left_bumper;
+
             //send the power and rpms to the driver station
-            telemetry.addLine("Motor Power: "+ ((-currentPower)*100)+"%" );
+            telemetry.addLine("Motor Power: "+ ((currentPower)*100)+"%" );
             telemetry.addLine("Rpms :"+ rpms);
             telemetry.update();
 
