@@ -106,6 +106,7 @@ public class WheelLauncherTestProgram extends LinearOpMode {
             //calculate the rpms
             double rpms = (((flywheel.getCurrentPosition()-lastencoder)/COUNTS_PER_MOTOR_REV)/(runtime.milliseconds() -lastchecktime));
             rpms*= MILLISECONDS_PER_MINUTE;
+            rpms = Math.abs(rpms);
 
             //save the current time and encoder value;
             lastencoder = flywheel.getCurrentPosition();
