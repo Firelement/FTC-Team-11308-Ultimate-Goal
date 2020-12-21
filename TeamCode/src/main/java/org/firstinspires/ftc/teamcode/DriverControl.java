@@ -39,7 +39,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 //This program is disabled because it is not necessary for testing purposes right now.
-//This is where the final driver control program will be implemented.
+//This program is where the final driver control program will be implemented.
 @Disabled
 @TeleOp(name="Driver Control", group="Linear Opmode")
 public class DriverControl extends LinearOpMode {
@@ -48,8 +48,8 @@ public class DriverControl extends LinearOpMode {
     private final double LIFT_POWER = 0.6;
     private final double CLOSED_LATCH_POSITION = 0.0;
     private final double OPEN_LATCH_POSITION = 0.5;
-    private final double INTAKE_RELEASE_LATCHED_POSITIION = 0.3;
-    private final double INTAKE_RELEASE_OPEN_POSIION = 0.7;
+    //private final double INTAKE_RELEASE_LATCHED_POSITIION = 0.3;
+    //private final double INTAKE_RELEASE_OPEN_POSIION = 0.7;
 
     // Declare Motor Classes
     private ElapsedTime runtime = new ElapsedTime();
@@ -57,15 +57,16 @@ public class DriverControl extends LinearOpMode {
     private DcMotor rightFrontDrive;
     private DcMotor leftRearDrive;
     private DcMotor rightRearDrive;
+    private DcMotor wobbleLifter;
     private DcMotor intake;
-    private  DcMotor flyWheel;
+    private DcMotor flyWheel;
     //This is the alternate code if we go for Austin's launcher
     //private DcMotor boltRetractMotor;
 
     //Declare Servo Classes
     private Servo wobbleLiftLatch;
     //this servo is not currently part of the design
-    private Servo intakeRelease;
+    //private Servo intakeRelease;
 
     @Override
     public void runOpMode() {
@@ -77,6 +78,7 @@ public class DriverControl extends LinearOpMode {
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
         leftRearDrive  = hardwareMap.get(DcMotor.class, "left_rear_drive");
         rightRearDrive = hardwareMap.get(DcMotor.class, "right_rear_drive");
+        wobbleLifter = hardwareMap.get(DcMotor.class,"wobble_Lifter");
         intake = hardwareMap.get(DcMotor.class,"intake");
         flyWheel = hardwareMap.get(DcMotor.class,"fly_wheel");
         //boltRetractMotor =hardwareMap.get(DcMotor.class,"bolt_retract_motor");
@@ -93,6 +95,7 @@ public class DriverControl extends LinearOpMode {
         leftRearDrive.setDirection(DcMotor.Direction.REVERSE);
         rightRearDrive.setDirection(DcMotor.Direction.FORWARD);
 
+        wobbleLifter.setDirection(DcMotor.Direction.FORWARD);
         intake.setDirection(DcMotor.Direction.FORWARD);
         flyWheel.setDirection(DcMotor.Direction.FORWARD);
         //boltRetractMotor.setDirection(DcMotor.Direction.FORWARD);
@@ -114,6 +117,9 @@ public class DriverControl extends LinearOpMode {
             double rightFrontPower;
             double leftRearPower;
             double rightRearPower;
+
+            //Setup a variable for the wobbleLifter
+            double wobbleLifterPower;
 
             // Setup variables to hold the Game pad inputs
             double drive;
@@ -140,6 +146,17 @@ public class DriverControl extends LinearOpMode {
             rightFrontPower = drive - rotate - strafe;
             rightRearPower = drive - rotate + strafe;
 
+            //Set the wobble lifter power
+            if(gamepad1.left_bumper == true){
+                wobbleLifterPower = LIFT_POWER;
+            }
+            else if(gamepad1.right_bumper == true){
+                wobbleLifterPower = -LIFT_POWER;
+            }
+            else{
+                wobbleLifterPower = 0.0;
+            }
+
             // make sure that the power variables are within -1.0 and 1.0
             leftFrontPower    = Range.clip(leftFrontPower, -1.0, 1.0) ;
             rightFrontPower   = Range.clip(rightFrontPower, -1.0, 1.0) ;
@@ -153,6 +170,7 @@ public class DriverControl extends LinearOpMode {
             else{
                 wobbleLiftLatchPosition = CLOSED_LATCH_POSITION;
             }
+            //this section will be commented out untill we have an intake
             /*
             if(gamepad1.a == true){
                 intakeReleasePosition = INTAKE_RELEASE_OPEN_POSIION;
@@ -167,6 +185,9 @@ public class DriverControl extends LinearOpMode {
             rightFrontDrive.setPower(rightFrontPower);
             leftRearDrive.setPower(leftRearPower);
             rightRearDrive.setPower(rightRearPower);
+
+            //set the power of the wobble lifter
+            wobbleLifter.setPower(wobbleLifterPower);
 
             //Set the position of the servos
             wobbleLiftLatch.setPosition(wobbleLiftLatchPosition);
