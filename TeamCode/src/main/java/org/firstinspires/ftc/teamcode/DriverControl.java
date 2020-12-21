@@ -64,7 +64,7 @@ public class DriverControl extends LinearOpMode {
     //private DcMotor boltRetractMotor;
 
     //Declare Servo Classes
-    private Servo wobbleLiftLatch;
+    private Servo wobbleLatch;
     //this servo is not currently part of the design
     //private Servo intakeRelease;
 
@@ -84,7 +84,7 @@ public class DriverControl extends LinearOpMode {
         //boltRetractMotor =hardwareMap.get(DcMotor.class,"bolt_retract_motor");
 
         //Initialize Servos
-        wobbleLiftLatch = hardwareMap.get(Servo.class,"wobble_lift_latch");
+        wobbleLatch = hardwareMap.get(Servo.class,"wobble_latch");
         //intakeRelease = hardwareMap.get(Servo.class,"intake_release");
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -101,7 +101,7 @@ public class DriverControl extends LinearOpMode {
         //boltRetractMotor.setDirection(DcMotor.Direction.FORWARD);
 
         //Intitialize the Servo positions
-        wobbleLiftLatch.setPosition(CLOSED_LATCH_POSITION);
+        wobbleLatch.setPosition(CLOSED_LATCH_POSITION);
         //intakeRelease.setPosition(INTAKE_RELEASE_LATCHED_POSITIION);
 
 
@@ -129,7 +129,7 @@ public class DriverControl extends LinearOpMode {
 
             //Setup variables to hold the Servo Positions
             double intakeReleasePosition;
-            double wobbleLiftLatchPosition;
+            double wobbleLatchPosition;
 
 
             // Assign the Game pad inputs
@@ -165,10 +165,10 @@ public class DriverControl extends LinearOpMode {
 
             //set the Servo positions based on the driver control input
             if(gamepad1.x == true){
-                wobbleLiftLatchPosition = OPEN_LATCH_POSITION;
+                wobbleLatchPosition = OPEN_LATCH_POSITION;
             }
             else{
-                wobbleLiftLatchPosition = CLOSED_LATCH_POSITION;
+                wobbleLatchPosition = CLOSED_LATCH_POSITION;
             }
             //this section will be commented out untill we have an intake
             /*
@@ -190,7 +190,7 @@ public class DriverControl extends LinearOpMode {
             wobbleLifter.setPower(wobbleLifterPower);
 
             //Set the position of the servos
-            wobbleLiftLatch.setPosition(wobbleLiftLatchPosition);
+            wobbleLatch.setPosition(wobbleLatchPosition);
             //intakeRelease.setPosition(intakeReleasePosition);
 
             // Show the elapsed game time and wheel power.
