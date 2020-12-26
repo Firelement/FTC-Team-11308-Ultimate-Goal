@@ -58,7 +58,7 @@ public class MechanumWheelDriveWithOdometry extends LinearOpMode {
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
         leftRearDrive  = hardwareMap.get(DcMotor.class, "left_rear_drive");
         rightRearDrive = hardwareMap.get(DcMotor.class, "right_rear_drive");
-        intakeWheel1 = hardwareMap.get(DcMotor.class, "intake_wheel_1");
+       // intakeWheel1 = hardwareMap.get(DcMotor.class, "intake_wheel_1");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -67,11 +67,13 @@ public class MechanumWheelDriveWithOdometry extends LinearOpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         leftRearDrive.setDirection(DcMotor.Direction.REVERSE);
         rightRearDrive.setDirection(DcMotor.Direction.FORWARD);
-        intakeWheel1.setDirection(DcMotor.Direction.FORWARD);
+       // intakeWheel1.setDirection(DcMotor.Direction.FORWARD);
 
         //Set wheels to not run using encoder so that we can use the encoder for odometry
-        intakeWheel1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-      //  leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+       // intakeWheel1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -119,8 +121,8 @@ public class MechanumWheelDriveWithOdometry extends LinearOpMode {
             rightRearDrive.setPower(rightRearPower);
 
             //Display the y-position of the robot through odometry
-            telemetry.addData("Y-Position: ", intakeWheel1.getCurrentPosition());
-            //telemetry.addData("Y-Position: ", leftFrontDrive.getCurrentPosition());
+            //telemetry.addData("Y-Position: ", intakeWheel1.getCurrentPosition());
+            telemetry.addData("Y-Position: ", -leftFrontDrive.getCurrentPosition());
             telemetry.update();
         }
     }
