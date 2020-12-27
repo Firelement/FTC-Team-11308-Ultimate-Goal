@@ -42,14 +42,39 @@ public class AutoRed extends LinearOpMode {
 
         // Step through each leg of the path,
 
-        encoderDrive(TURN_SPEED,   12,  4.0);  //Forward 12 Inches with 4 Sec timeout
+        //Drive to see rings - Encoder Drive
+        //Detect Ring Stack - Detect Rings
+
+        /*If: 4 rings
+        Power Shots  - Encoder Drive, Shoot Rings
+        Deposit wobble goal - Open Wobble Claw
+        Grab Rings - Intake Wheel Drive
+        Shoot high goal - Shoot Rings
+        Grab Last ring - Intake Wheel Drive
+        Shoot high goal - Shoot Rings
+        Park on line - Encoder Drive
+        */
+
+        /*If: 1 ring
+        Power Shots  - Encoder Drive, Shoot Rings
+        Deposit wobble goal - Open Wobble Claw
+        Grab Ring - Intake Wheel Drive
+        Shoot high goal - Shoot Rings
+        Park on line - Encoder Drive
+        */
+
+        /*If: No Rings
+        Power Shots  - Shoot 1 ring 3 times
+        Deposit wobble goal - Open Wobble Claw
+        Park on line - Encoder Drive
+        */
+        //encoderDrive(TURN_SPEED,   12,  4.0);  //Forward 12 Inches with 4 Sec timeout
+
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }
     
-    public void encoderDrive(double speed,
-                             double inches,
-                             double timeoutS) {
+        public void encoderDrive(double speed, double inches, double timeoutS) {
         int newTarget;
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
@@ -84,5 +109,22 @@ public class AutoRed extends LinearOpMode {
 
                 //  sleep(250);   // optional pause after each move
             }
+        }
+
+        public void intakeWheelDrive(){
+
+        }
+        
+        public int detectRings(){
+            int rings = 0;
+            return rings;
+        }
+
+        public void shootRings(){
+
+        }
+
+        public void wobbleClawOpen(){
+
         }
     }

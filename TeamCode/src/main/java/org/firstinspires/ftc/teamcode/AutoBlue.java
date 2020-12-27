@@ -42,7 +42,35 @@ public class AutoBlue extends LinearOpMode {
 
         // Step through each leg of the path,
 
-        encoderDrive(TURN_SPEED,   12,  4.0);  //Forward 12 Inches with 4 Sec timeout
+        //Drive to see rings
+        //Detect Ring Stack
+
+        /*If: 4 rings
+        Power Shots
+        Deposit wobble goal
+        Grab Rings
+        Shoot high goal
+        Grab Last ring
+        Shoot high goal
+        Park on line
+        */
+
+        /*If: 1 ring
+        Power Shots
+        Deposit wobble goal
+        Grab Ring
+        Shoot high goal
+        Park on line
+        */
+
+        /*If: No Rings
+        Power Shots
+        Deposit wobble goal
+        Park on line
+        */
+
+        //encoderDrive(TURN_SPEED,   12,  4.0);  //Forward 12 Inches with 4 Sec timeout
+
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }
