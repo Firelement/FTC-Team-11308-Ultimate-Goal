@@ -48,8 +48,8 @@ public class Wobble_Goal_Test extends LinearOpMode {
 
     //constants
     private final double LIFT_POWER = 0.6;
-    private final double CLOSED_SERVO_POSITION = 0.5;
-    private final double OPEN_SERVO_POSITION = 0.0;
+    private final double CLOSED_SERVO_POSITION = 1.0;
+    private final double OPEN_SERVO_POSITION = 0.45;
 
     @Override
     public void runOpMode() {
