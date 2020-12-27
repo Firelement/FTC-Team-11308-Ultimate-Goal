@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import java.sql.Driver;
+
 @Autonomous(name="Auto Red", group="Pushbot")
 public class AutoRed extends LinearOpMode {
 
@@ -20,6 +22,7 @@ public class AutoRed extends LinearOpMode {
     static final double     TURN_SPEED              = 0.4;
     static final double INTAKE_WHEEL_SPEED = 1;
     int rings = 0;
+
     @Override
     public void runOpMode() {
 
@@ -44,11 +47,27 @@ public class AutoRed extends LinearOpMode {
         // Step through each leg of the path,
 
         //Drive to see rings - Encoder Drive
+
         //Detect Ring Stack - Detect Rings
+        detectRings();
+        // Power Shots  - Shoot 1 ring 3 times
+        shootRings(1);
+        //Line up next shot
+        shootRings(1);
+        //Line up next shot
+        shootRings(1);
+       //Determine where to place wobble goal and next autonomous steps
+         switch(rings){
+             case 0:
+                 break;
+             case 1:
+                 break;
+             case 4:
+                 break;
+         }
 
         /*If: 4 rings
-        Power Shots  - Shoot 1 ring 3 times
-        Deposit wobble goal - Open Wobble Claw
+        Deposit wobble goal far - Open Wobble Claw
         Grab Rings - Intake Wheel Drive
         Shoot high goal - Shoot Rings
         Grab Last ring - Intake Wheel Drive
@@ -57,16 +76,14 @@ public class AutoRed extends LinearOpMode {
         */
 
         /*If: 1 ring
-        Power Shots  - Shoot 1 ring 3 times
-        Deposit wobble goal - Open Wobble Claw
+        Deposit wobble goal middle - Open Wobble Claw
         Grab Ring - Intake Wheel Drive
         Shoot high goal - Shoot Rings
         Park on line - Encoder Drive
         */
 
         /*If: No Rings
-        Power Shots  - Shoot 1 ring 3 times
-        Deposit wobble goal - Open Wobble Claw
+        Deposit wobble goal closest - Open Wobble Claw
         Park on line - Encoder Drive
         */
         //encoderDrive(TURN_SPEED,   12,  4.0);  //Forward 12 Inches with 4 Sec timeout
@@ -147,14 +164,13 @@ public class AutoRed extends LinearOpMode {
                 leftRearDrive.setPower(0);
                 rightRearDrive.setPower(0);
                 //INTAKE WHEELS STOP
-                
+
                 //  sleep(250);   // optional pause after each move
             }
         }
 
-        public int detectRings(){
+        public void detectRings(){
             //Webcam Detection changes rings to number of rings- defaults to 0
-            return rings;
         }
 
         public void shootRings(int amountToShoot){
