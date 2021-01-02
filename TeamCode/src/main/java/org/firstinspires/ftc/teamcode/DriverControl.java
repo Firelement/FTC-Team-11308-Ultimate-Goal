@@ -29,11 +29,14 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.widget.Button;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -46,8 +49,8 @@ public class DriverControl extends LinearOpMode {
 
     //Declare constants
     private final double LIFT_POWER = 0.6;
-    private final double CLOSED_LATCH_POSITION = 0.0;
-    private final double OPEN_LATCH_POSITION = 0.5;
+    private final double CLOSED_HAND_POSITION = 0.0;
+    private final double OPEN_HAND_POSITION = 0.5;
     //private final double INTAKE_RELEASE_LATCHED_POSITIION = 0.3;
     //private final double INTAKE_RELEASE_OPEN_POSIION = 0.7;
 
@@ -64,9 +67,12 @@ public class DriverControl extends LinearOpMode {
     //private DcMotor boltRetractMotor;
 
     //Declare Servo Classes
-    private Servo wobbleLatch;
+    private Servo wobbleHand;
     //this servo is not currently part of the design
     //private Servo intakeRelease;
+
+    //Declare Buttons
+    private DigitalChannel wobbleButton;
 
     @Override
     public void runOpMode() {
@@ -84,8 +90,11 @@ public class DriverControl extends LinearOpMode {
         //boltRetractMotor =hardwareMap.get(DcMotor.class,"bolt_retract_motor");
 
         //Initialize Servos
-        wobbleLatch = hardwareMap.get(Servo.class,"wobble_latch");
+        wobbleHand = hardwareMap.get(Servo.class,"wobble_hand");
         //intakeRelease = hardwareMap.get(Servo.class,"intake_release");
+
+        //Initilaize buttons
+        wobbleButton = hardwareMap.get(DigitalChannel.class,"wobble_button");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -101,9 +110,15 @@ public class DriverControl extends LinearOpMode {
         //boltRetractMotor.setDirection(DcMotor.Direction.FORWARD);
 
         //Intitialize the Servo positions
-        wobbleLatch.setPosition(CLOSED_LATCH_POSITION);
+        wobbleHand.setPosition(CLOSED_HAND_POSITION);
         //intakeRelease.setPosition(INTAKE_RELEASE_LATCHED_POSITIION);
 
+        //Specify that motorOnButton is an input
+        wobbleButton.setMode(DigitalChannel.Mode.INPUT);
+
+        //Set up a variable to hold the wobble hand positon. It must be defined
+        //here so that the hand will hold its position after the gamepad button is released
+        double wobbleHandPosition = CLOSED_HAND_POSITION;
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -127,9 +142,8 @@ public class DriverControl extends LinearOpMode {
             // positive rotation is in the clockwise direction
             double strafe;
 
-            //Setup variables to hold the Servo Positions
+            //Setup variables to hold the intakeServo Position
             double intakeReleasePosition;
-            double wobbleLatchPosition;
 
 
             // Assign the Game pad inputs
@@ -164,15 +178,28 @@ public class DriverControl extends LinearOpMode {
             rightRearPower    = Range.clip(rightRearPower,-1.0,1.0);
 
             //set the Servo positions based on the driver control input
-            if(gamepad1.x == true){
-                wobbleLatchPosition = OPEN_LATCH_POSITION;
+            if(gamepad1.a == true){
+                wobbleHandPosition = OPEN_HAND_POSITION;
             }
+            else if(gamepad1.b == true){
+                wobbleHandPosition = CLOSED_HAND_POSITION;
+            }
+            //This section will be commented out unless we decide we are going to use a button
+            //in the wobble goal hand
+            /*
             else{
-                wobbleLatchPosition = CLOSED_LATCH_POSITION;
+                if(wobbleButton.getState() == true){
+                    wobbleHandPosition = CLOSED_HAND_POSITION;
+                }
+                else{
+                    wobbleHandPosition = OPEN_HAND_POSITION;
+                }
             }
+            */
+
             //this section will be commented out untill we have an intake
             /*
-            if(gamepad1.a == true){
+            if(gamepad1.x == true){
                 intakeReleasePosition = INTAKE_RELEASE_OPEN_POSIION;
             }
             else{
@@ -190,7 +217,7 @@ public class DriverControl extends LinearOpMode {
             wobbleLifter.setPower(wobbleLifterPower);
 
             //Set the position of the servos
-            wobbleLatch.setPosition(wobbleLatchPosition);
+            wobbleHand.setPosition(wobbleHandPosition);
             //intakeRelease.setPosition(intakeReleasePosition);
 
             // Show the elapsed game time and wheel power.
