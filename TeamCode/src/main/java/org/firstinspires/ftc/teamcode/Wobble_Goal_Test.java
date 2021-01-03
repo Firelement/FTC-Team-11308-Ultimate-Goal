@@ -50,8 +50,8 @@ public class Wobble_Goal_Test extends LinearOpMode {
 
     //constants
     private final double LIFT_POWER = 0.6;
-    private final double CLOSED_SERVO_POSITION = 1.0;
-    private final double OPEN_SERVO_POSITION = 0.45;
+    private final double CLOSED_SERVO_POSITION = 0.28;
+    private final double OPEN_SERVO_POSITION = 0.7;
 
     @Override
     public void runOpMode() {
@@ -73,6 +73,8 @@ public class Wobble_Goal_Test extends LinearOpMode {
 
         //variable for the servo position
         double servoPosition = OPEN_SERVO_POSITION;
+
+        boolean wasButtonActivated = false;
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -106,12 +108,18 @@ public class Wobble_Goal_Test extends LinearOpMode {
                 servoPosition = CLOSED_SERVO_POSITION;
             }
             else{
-                if(button.getState() == true){
+                if(wasButtonActivated) {
                     servoPosition = CLOSED_SERVO_POSITION;
                 }
-                else{
-                    servoPosition = OPEN_SERVO_POSITION;
-                }
+            }
+
+            //if the button is pressed set wasButtonActivated to true to lock the hand closed
+            if(button.getState() == false){
+                wasButtonActivated = true;
+            }
+            //allow the user to reset wasButtonActivated
+            if(gamepad1.x == true){
+                wasButtonActivated = false;
             }
 
             // Send the power to the motor
