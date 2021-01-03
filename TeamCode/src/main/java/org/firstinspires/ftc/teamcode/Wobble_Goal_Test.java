@@ -74,7 +74,7 @@ public class Wobble_Goal_Test extends LinearOpMode {
         //variable for the servo position
         double servoPosition = OPEN_SERVO_POSITION;
 
-        boolean wasButtonActivated = false;
+        boolean isInMode2 = false;
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -100,26 +100,33 @@ public class Wobble_Goal_Test extends LinearOpMode {
             //safety check on the motor power
             motorPower    = Range.clip(motorPower, -1.0, 1.0) ;
 
-            //set the servo position based on the user input
-            if(gamepad1.a == true){
-                servoPosition = OPEN_SERVO_POSITION;
-            }
-            else if(gamepad1.b == true){
-                servoPosition = CLOSED_SERVO_POSITION;
-            }
-            else{
-                if(wasButtonActivated) {
+            //if we are in mode 1 use A andB buttons to toggle open and close
+            if(isInMode2 == false){
+                if(gamepad1.a == true){
+                    servoPosition = OPEN_SERVO_POSITION;
+                }
+                else if(gamepad1.b == true){
                     servoPosition = CLOSED_SERVO_POSITION;
                 }
             }
-
-            //if the button is pressed set wasButtonActivated to true to lock the hand closed
-            if(button.getState() == false){
-                wasButtonActivated = true;
+            //If we are in mode 2 set the default position to closed. Allow the user to open the hand
+            //by holding the A button.
+            else {
+                if (gamepad1.a == true) {
+                    servoPosition = OPEN_SERVO_POSITION;
+                }
+                else {
+                        servoPosition = CLOSED_SERVO_POSITION;
+                }
             }
-            //allow the user to reset wasButtonActivated
+
+            //If the wobble goal button is pressed go to mode 2
+            if(button.getState() == false){
+                isInMode2 = true;
+            }
+            //Allow the user to reset to Mode 1 when the X button is pressed
             if(gamepad1.x == true){
-                wasButtonActivated = false;
+                isInMode2 = false;
             }
 
             // Send the power to the motor
