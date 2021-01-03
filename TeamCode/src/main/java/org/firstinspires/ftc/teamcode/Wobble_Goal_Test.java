@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -45,6 +46,7 @@ public class Wobble_Goal_Test extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor liftMotor;
     private Servo latchServo;
+    private DigitalChannel button;
 
     //constants
     private final double LIFT_POWER = 0.6;
@@ -61,9 +63,13 @@ public class Wobble_Goal_Test extends LinearOpMode {
         // step (using the FTC Robot Controller app on the phone).
         liftMotor = hardwareMap.get(DcMotor.class, "wobble_lifter");
         latchServo = hardwareMap.get(Servo.class,"latchservo");
+        button = hardwareMap.get(DigitalChannel.class,"button");
 
         // Most robots need the motor on one side to be reversed to drive forward
         liftMotor.setDirection(DcMotor.Direction.FORWARD);
+
+        //Specify that motorOnButton is an input
+        button.setMode(DigitalChannel.Mode.INPUT);
 
         //variable for the servo position
         double servoPosition = OPEN_SERVO_POSITION;
@@ -99,6 +105,14 @@ public class Wobble_Goal_Test extends LinearOpMode {
             else if(gamepad1.b == true){
                 servoPosition = CLOSED_SERVO_POSITION;
             }
+            else{
+                if(button.getState() == true){
+                    servoPosition = CLOSED_SERVO_POSITION;
+                }
+                else{
+                    servoPosition = OPEN_SERVO_POSITION;
+                }
+            }
 
             // Send the power to the motor
             liftMotor.setPower(motorPower);
@@ -108,6 +122,7 @@ public class Wobble_Goal_Test extends LinearOpMode {
             
             // Show the elapsed game time
             telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addLine("Button state:"+button.getState());
             telemetry.update();
         }
     }
