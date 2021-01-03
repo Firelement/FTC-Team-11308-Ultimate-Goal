@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -16,6 +18,7 @@ import java.util.List;
 
 @Autonomous(name="Auto Red", group="Pushbot")
 public class AutoRed extends LinearOpMode {
+    /* Declare OpMode members. */
     private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Quad";
     private static final String LABEL_SECOND_ELEMENT = "Single";
@@ -25,12 +28,14 @@ public class AutoRed extends LinearOpMode {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
+    private final double CLOSED_SERVO_POSITION = 1.0;
+    private final double OPEN_SERVO_POSITION = 0.45;
 
-    /* Declare OpMode members. */
     private DcMotor leftFrontDrive;
     private DcMotor rightFrontDrive;
     private DcMotor leftRearDrive;
     private DcMotor rightRearDrive;
+    private Servo latchServo;
 
     private ElapsedTime     runtime = new ElapsedTime();
     static final double COUNTS_PER_INCH = 531;
@@ -56,6 +61,8 @@ public class AutoRed extends LinearOpMode {
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
         leftRearDrive  = hardwareMap.get(DcMotor.class, "left_rear_drive");
         rightRearDrive = hardwareMap.get(DcMotor.class, "right_rear_drive");
+        //Initialize the Servos
+        latchServo = hardwareMap.get(Servo.class,"latchservo");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -225,8 +232,9 @@ public class AutoRed extends LinearOpMode {
             //Launch rings for specific amount of time, according to amount to shoot
         }
 
-        public void wobbleClawOpen(){
+        public void setWobbleClawPosition(double servoPosition){
             //Set wobble claw position to be open
+            latchServo.setPosition(servoPosition);
         }
     /**
      * Initialize the Vuforia localization engine.
