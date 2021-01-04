@@ -50,8 +50,8 @@ public class Wobble_Goal_Test extends LinearOpMode {
 
     //constants
     private final double LIFT_POWER = 0.6;
-    private final double CLOSED_SERVO_POSITION = 1.0;
-    private final double OPEN_SERVO_POSITION = 0.45;
+    private final double CLOSED_SERVO_POSITION = 0.28;
+    private final double OPEN_SERVO_POSITION = 0.7;
 
     @Override
     public void runOpMode() {
@@ -73,6 +73,8 @@ public class Wobble_Goal_Test extends LinearOpMode {
 
         //variable for the servo position
         double servoPosition = OPEN_SERVO_POSITION;
+
+        boolean isInMode2 = false;
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -98,20 +100,33 @@ public class Wobble_Goal_Test extends LinearOpMode {
             //safety check on the motor power
             motorPower    = Range.clip(motorPower, -1.0, 1.0) ;
 
-            //set the servo position based on the user input
-            if(gamepad1.a == true){
-                servoPosition = OPEN_SERVO_POSITION;
-            }
-            else if(gamepad1.b == true){
-                servoPosition = CLOSED_SERVO_POSITION;
-            }
-            else{
-                if(button.getState() == true){
-                    servoPosition = CLOSED_SERVO_POSITION;
-                }
-                else{
+            //if we are in mode 1 use A andB buttons to toggle open and close
+            if(isInMode2 == false){
+                if(gamepad1.a == true){
                     servoPosition = OPEN_SERVO_POSITION;
                 }
+                else if(gamepad1.b == true){
+                    servoPosition = CLOSED_SERVO_POSITION;
+                }
+            }
+            //If we are in mode 2 set the default position to closed. Allow the user to open the hand
+            //by holding the A button.
+            else {
+                if (gamepad1.a == true) {
+                    servoPosition = OPEN_SERVO_POSITION;
+                }
+                else {
+                        servoPosition = CLOSED_SERVO_POSITION;
+                }
+            }
+
+            //If the wobble goal button is pressed go to mode 2
+            if(button.getState() == false){
+                isInMode2 = true;
+            }
+            //Allow the user to reset to Mode 1 when the X button is pressed
+            if(gamepad1.x == true){
+                isInMode2 = false;
             }
 
             // Send the power to the motor
