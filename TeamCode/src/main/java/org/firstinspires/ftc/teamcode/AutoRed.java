@@ -28,8 +28,9 @@ public class AutoRed extends LinearOpMode {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
-    private final double CLOSED_SERVO_POSITION = 1.0;
-    private final double OPEN_SERVO_POSITION = 0.45;
+    private final double LIFT_POWER = 0.6;
+    private final double CLOSED_SERVO_POSITION = 0.28;
+    private final double OPEN_SERVO_POSITION = 0.7;
 
     private DcMotor leftFrontDrive;
     private DcMotor rightFrontDrive;
@@ -78,7 +79,7 @@ public class AutoRed extends LinearOpMode {
         waitForStart();
 
         // Step through each leg of the path,
-
+        //setWobbleClawPosition(CLOSED_SERVO_POSITION);
         //Drive to see rings - Encoder Drive
 
         //Detect Ring Stack - Detect Rings
@@ -122,8 +123,8 @@ public class AutoRed extends LinearOpMode {
         */
         //encoderDrive(TURN_SPEED,   12,  4.0);  //Forward 12 Inches with 4 Sec timeout
 
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
+      //  telemetry.addData("Path", "Complete");
+      //  telemetry.update();
     }
     
         public void encoderDrive(double speed, double inches, double timeoutS) {
@@ -164,43 +165,11 @@ public class AutoRed extends LinearOpMode {
         }
 
         public void intakeWheelDrive(double speed, double inches, double timeoutS){
-            int newTarget;
-            // Ensure that the opmode is still active
-            if (opModeIsActive()) {
+            //Intake wheel on
 
-                // Determine new target position, and pass to motor controller
-                newTarget = leftFrontDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
-                //reset runtime
-                runtime.reset();
-
-                if (leftFrontDrive.getCurrentPosition() > newTarget) { //If current position is larger than new target, robot needs to reverse
-
-                    while (leftFrontDrive.getCurrentPosition() >= newTarget && (runtime.seconds() < timeoutS) && opModeIsActive()) {
-                        leftFrontDrive.setPower(-speed);
-                        rightFrontDrive.setPower(-speed);
-                        leftRearDrive.setPower(-speed);
-                        rightRearDrive.setPower(-speed);
-                        //INTAKE WHEELS SPIN
-                    }
-                } else { //If current position is smaller than new target, robot goes forward
-                    while (leftFrontDrive.getCurrentPosition() <= newTarget && (runtime.seconds() < timeoutS) && opModeIsActive()) {
-                        leftFrontDrive.setPower(speed);
-                        rightFrontDrive.setPower(speed);
-                        leftRearDrive.setPower(speed);
-                        rightRearDrive.setPower(speed);
-                        //INTAKE WHEELS SPIN
-                    }
-                }
-
-                // Stop all motion;
-                leftFrontDrive.setPower(0);
-                rightFrontDrive.setPower(0);
-                leftRearDrive.setPower(0);
-                rightRearDrive.setPower(0);
-                //INTAKE WHEELS STOP
-
-                //  sleep(250);   // optional pause after each move
-            }
+            //Drive Forward
+            encoderDrive(speed,inches,timeoutS);
+            //Intake wheel off
         }
 
         public void detectRings(){
