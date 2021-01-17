@@ -81,23 +81,73 @@ public class AutoRed extends LinearOpMode {
         // Step through each leg of the path,
         //setWobbleClawPosition(CLOSED_SERVO_POSITION);
         //Drive to see rings - Encoder Drive
-
+        encoderDriveY(DRIVE_SPEED, 30, 5);
         //Detect Ring Stack - Detect Rings
         detectRings();
-        /*
-        // Power Shots  - Shoot 1 ring 3 times
+        //Drive to power shot shooting location
+        encoderDriveX(DRIVE_SPEED, -13, 5);
+        encoderDriveY(DRIVE_SPEED, 31, 5);
+        //Power Shots  - Shoot 1 ring 3 times
+        //Shoot ring 1
         shootRings(1);
         //Line up next shot
+        encoderDriveX(DRIVE_SPEED, 7.5, 2);
+        //Shoot ring 2
         shootRings(1);
         //Line up next shot
+        encoderDriveX(DRIVE_SPEED, 7.5, 2);
+        //Shoot final ring
         shootRings(1);
-       //Determine where to place wobble goal and next autonomous steps
+        //Determine where to place wobble goal and next autonomous steps
          switch(rings){
              case 0:
+                 //Drive to wobble goal deposit area
+                 encoderDriveX(DRIVE_SPEED, 55, 5);
+                 encoderDriveY(DRIVE_SPEED, 5, 1);
+                 //Drop wobble goal
+                 setWobbleClawPosition(OPEN_SERVO_POSITION);
+                 //Park on line
+                 encoderDriveY(DRIVE_SPEED, -3, 1);
                  break;
              case 1:
+                 //Drive to wobble goal deposit area
+                 encoderDriveX(DRIVE_SPEED, 26, 3);
+                 encoderDriveY(DRIVE_SPEED, 25, 3);
+                 //Drop wobble goal
+                 setWobbleClawPosition(OPEN_SERVO_POSITION);
+                 //Grab last ring for shooting
+                 encoderDriveY(DRIVE_SPEED, -25, 3);
+                 encoderDriveX(DRIVE_SPEED, -6, 1);
+                 intakeWheelDrive(DRIVE_SPEED, -35, 6);
+                 //Drive to goal shooting location
+                 encoderDriveY(DRIVE_SPEED, 35, 6);
+                 //Shoot ring
+                 shootRings(1);
+                 //Park on line
+                 encoderDriveY(DRIVE_SPEED, 5, 1);
                  break;
              case 4:
+                 //Drive to wobble goal deposit area
+                 encoderDriveX(DRIVE_SPEED, 55, 5);
+                 encoderDriveY(DRIVE_SPEED, 48, 5);
+                 //Drop wobble goal
+                 setWobbleClawPosition(OPEN_SERVO_POSITION);
+                 //Grab last ring for shooting
+                 encoderDriveY(DRIVE_SPEED, -48, 3);
+                 encoderDriveX(DRIVE_SPEED, -28, 1);
+                 intakeWheelDrive(DRIVE_SPEED, -35, 6);
+                 //Drive to goal shooting location
+                 encoderDriveY(DRIVE_SPEED, 35, 6);
+                 //Shoot rings
+                 shootRings(3);
+                 //intake last ring
+                 intakeWheelDrive(DRIVE_SPEED, -35, 6);
+                 //Drive to goal shooting location
+                 encoderDriveY(DRIVE_SPEED, 35, 6);
+                 //Shoot last ring
+                 shootRings(1);
+                 //Park on line
+                 encoderDriveY(DRIVE_SPEED, 5, 1);
                  break;
          }
 
