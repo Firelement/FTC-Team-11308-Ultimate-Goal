@@ -127,30 +127,39 @@ public class AutoRed extends LinearOpMode {
       //  telemetry.update();
     }
     
-        public void encoderDrive(double speed, double inches, double timeoutS) {
+        public void encoderDriveY(double speed, double inches, double timeoutS) {
         int newTarget;
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
 
                 // Determine new target position, and pass to motor controller
+                //This will be target position for both motors but will be determined by the left motor
                 newTarget = leftFrontDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
                 //reset runtime
                 runtime.reset();
 
                 if (leftFrontDrive.getCurrentPosition() > newTarget) { //If current position is larger than new target, robot needs to reverse
 
-                    while (leftFrontDrive.getCurrentPosition() >= newTarget && (runtime.seconds() < timeoutS) && opModeIsActive()) {
-                        leftFrontDrive.setPower(-speed);
-                        rightFrontDrive.setPower(-speed);
-                        leftRearDrive.setPower(-speed);
-                        rightRearDrive.setPower(-speed);
-                    }
+                    while (leftFrontDrive.getCurrentPosition() >= newTarget|| rightFrontDrive.getCurrentPosition() >= newTarget && (runtime.seconds() < timeoutS) && opModeIsActive()) {
+                        if(leftFrontDrive.getCurrentPosition() >= newTarget) {
+                            leftFrontDrive.setPower(-speed);
+                            leftRearDrive.setPower(-speed);
+                        }
+                        if(rightFrontDrive.getCurrentPosition() >= newTarget) {
+                            rightFrontDrive.setPower(-speed);
+                            rightRearDrive.setPower(-speed);
+                        }
+                        }
                 } else { //If current position is smaller than new target, robot goes forward
-                    while (leftFrontDrive.getCurrentPosition() <= newTarget && (runtime.seconds() < timeoutS) && opModeIsActive()) {
-                        leftFrontDrive.setPower(speed);
-                        rightFrontDrive.setPower(speed);
-                        leftRearDrive.setPower(speed);
-                        rightRearDrive.setPower(speed);
+                    while (leftFrontDrive.getCurrentPosition() <= newTarget|| rightFrontDrive.getCurrentPosition() <= newTarget && (runtime.seconds() < timeoutS) && opModeIsActive()) {
+                        if(leftFrontDrive.getCurrentPosition() <= newTarget) {
+                            leftFrontDrive.setPower(speed);
+                            leftRearDrive.setPower(speed);
+                        }
+                        if(rightFrontDrive.getCurrentPosition() <= newTarget) {
+                            rightFrontDrive.setPower(speed);
+                            rightRearDrive.setPower(speed);
+                        }
                     }
                 }
 
@@ -164,11 +173,48 @@ public class AutoRed extends LinearOpMode {
             }
         }
 
+    public void encoderDriveX(double speed, double inches, double timeoutS) {
+        int newTarget;
+        // Ensure that the opmode is still active
+        if (opModeIsActive()) {
+
+            // Determine new target position, and pass to motor controller
+            newTarget = leftFrontDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
+            //reset runtime
+            runtime.reset();
+
+            if (leftFrontDrive.getCurrentPosition() > newTarget) { //If current position is larger than new target, robot needs to reverse
+
+                while (leftFrontDrive.getCurrentPosition() >= newTarget && (runtime.seconds() < timeoutS) && opModeIsActive()) {
+                    leftFrontDrive.setPower(-speed);
+                    rightFrontDrive.setPower(-speed);
+                    leftRearDrive.setPower(-speed);
+                    rightRearDrive.setPower(-speed);
+                }
+            } else { //If current position is smaller than new target, robot goes forward
+                while (leftFrontDrive.getCurrentPosition() <= newTarget && (runtime.seconds() < timeoutS) && opModeIsActive()) {
+                    leftFrontDrive.setPower(speed);
+                    rightFrontDrive.setPower(speed);
+                    leftRearDrive.setPower(speed);
+                    rightRearDrive.setPower(speed);
+                }
+            }
+
+            // Stop all motion;
+            leftFrontDrive.setPower(0);
+            rightFrontDrive.setPower(0);
+            leftRearDrive.setPower(0);
+            rightRearDrive.setPower(0);
+
+            //  sleep(250);   // optional pause after each move
+        }
+    }
+
         public void intakeWheelDrive(double speed, double inches, double timeoutS){
             //Intake wheel on
 
             //Drive Forward
-            encoderDrive(speed,inches,timeoutS);
+            encoderDriveY(speed,inches,timeoutS);
             //Intake wheel off
         }
 
