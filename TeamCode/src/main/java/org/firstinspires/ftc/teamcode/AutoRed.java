@@ -79,7 +79,7 @@ public class AutoRed extends LinearOpMode {
         waitForStart();
 
         // Step through each leg of the path,
-        //setWobbleClawPosition(CLOSED_SERVO_POSITION);
+        setWobbleClawPosition(CLOSED_SERVO_POSITION);
         //Drive to see rings - Encoder Drive
         encoderDriveY(DRIVE_SPEED, 30, 5);
         //Detect Ring Stack - Detect Rings
