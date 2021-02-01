@@ -48,11 +48,19 @@ import com.qualcomm.robotcore.util.Range;
 public class DriverControl extends LinearOpMode {
 
     //Declare constants
+    //If you have a value that stays constant is is good practice to make it a constant and
+    //define it at the beginning of the program where it can easily accessed.
     private final double LIFT_POWER = 0.6;
     private final double CLOSED_HAND_POSITION = 0.0;
     private final double OPEN_HAND_POSITION = 0.5;
-    //private final double INTAKE_RELEASE_LATCHED_POSITIION = 0.3;
-    //private final double INTAKE_RELEASE_OPEN_POSIION = 0.7;
+    private final double FLYWHEEL_POWER = 0.8;
+    private final double INTAKE_POWER = 0.5;
+    private final double CLOSED_RING_STOPPER = 0.5;// This value has not been tested yet.
+    private final double OPEN_RING_STOPPER = 0.0;// This value has not been tested yet either;
+
+    //We may need a servo to release the intake.
+    //private final double INTAKE_RELEASE_LATCHED_POSITION = 0.3;
+    //private final double INTAKE_RELEASE_OPEN_POSITION = 0.7;
 
     // Declare Motor Classes
     private ElapsedTime runtime = new ElapsedTime();
@@ -63,11 +71,10 @@ public class DriverControl extends LinearOpMode {
     private DcMotor wobbleLifter;
     private DcMotor intake;
     private DcMotor flyWheel;
-    //This is the alternate code if we go for Austin's launcher
-    //private DcMotor boltRetractMotor;
 
     //Declare Servo Classes
     private Servo wobbleHand;
+    private Servo ringStopper;
     //this servo is not currently part of the design
     //private Servo intakeRelease;
 
@@ -79,6 +86,8 @@ public class DriverControl extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
+        //Here we initialize the Motor,Servo, and Sensors to the hardware configured on the robot.
+
         //Initialize the Motors
         leftFrontDrive  = hardwareMap.get(DcMotor.class, "left_front_drive");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
@@ -87,18 +96,16 @@ public class DriverControl extends LinearOpMode {
         wobbleLifter = hardwareMap.get(DcMotor.class,"wobble_Lifter");
         intake = hardwareMap.get(DcMotor.class,"intake");
         flyWheel = hardwareMap.get(DcMotor.class,"fly_wheel");
-        //boltRetractMotor =hardwareMap.get(DcMotor.class,"bolt_retract_motor");
 
         //Initialize Servos
         wobbleHand = hardwareMap.get(Servo.class,"wobble_hand");
+        ringStopper = hardwareMap.get(Servo.class,"ring_stopper");
         //intakeRelease = hardwareMap.get(Servo.class,"intake_release");
 
-        //Initilaize buttons
+        //Initialize buttons
         wobbleButton = hardwareMap.get(DigitalChannel.class,"wobble_button");
 
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
-        // I believe that motors on the same side of the robot need to run in the same direction
+        // Most robots need the motors on one side to be reversed to drive properly
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         leftRearDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -107,16 +114,16 @@ public class DriverControl extends LinearOpMode {
         wobbleLifter.setDirection(DcMotor.Direction.FORWARD);
         intake.setDirection(DcMotor.Direction.FORWARD);
         flyWheel.setDirection(DcMotor.Direction.FORWARD);
-        //boltRetractMotor.setDirection(DcMotor.Direction.FORWARD);
 
-        //Intitialize the Servo positions
+        //Initialize the Servo positions
         wobbleHand.setPosition(CLOSED_HAND_POSITION);
-        //intakeRelease.setPosition(INTAKE_RELEASE_LATCHED_POSITIION);
+        ringStopper.setPosition(CLOSED_RING_STOPPER);
+        //intakeRelease.setPosition(INTAKE_RELEASE_LATCHED_POSITION);
 
         //Specify that motorOnButton is an input
         wobbleButton.setMode(DigitalChannel.Mode.INPUT);
 
-        //Set up a variable to hold the wobble hand positon. It must be defined
+        //Set up a variable to hold the wobble hand position. It must be defined
         //here so that the hand will hold its position after the gamepad button is released
         double wobbleHandPosition = CLOSED_HAND_POSITION;
 
@@ -133,8 +140,10 @@ public class DriverControl extends LinearOpMode {
             double leftRearPower;
             double rightRearPower;
 
-            //Setup a variable for the wobbleLifter
+            //Setup a variable for the wobbleLifter and flywheel
             double wobbleLifterPower;
+            double flywheelPower;
+            double intakePower;
 
             // Setup variables to hold the Game pad inputs
             double drive;
@@ -142,25 +151,27 @@ public class DriverControl extends LinearOpMode {
             // positive rotation is in the clockwise direction
             double strafe;
 
-            //Setup variables to hold the intakeServo Position
-            double intakeReleasePosition;
+            //Setup variables to hold the Servo Positions
+            //double intakeReleasePosition;
+            double ringStopperPosition;
 
 
             // Assign the Game pad inputs
             // These can be changed to what ever the driver wants it to be
-            //some of these may need to be made negative depending  on the gamepad
+            //some of these may need to be made negative depending  on the which direction
+            //is positive on the gamepad
             drive = gamepad1.right_stick_y;
             rotate = -gamepad1.left_stick_x;
             strafe = -gamepad1.right_stick_x;
 
             // Assign the power variables to the Game pad inputs
-            // currently strafing is not implemented
             leftFrontPower = drive + rotate + strafe;
             leftRearPower = drive + rotate - strafe;
             rightFrontPower = drive - rotate - strafe;
             rightRearPower = drive - rotate + strafe;
 
             //Set the wobble lifter power
+            //Alternate but less clear code: if(gamepad1.left_bumper){
             if(gamepad1.left_bumper == true){
                 wobbleLifterPower = LIFT_POWER;
             }
@@ -197,13 +208,29 @@ public class DriverControl extends LinearOpMode {
             }
             */
 
+            //This section controls launching the ring
+            if(gamepad1.right_trigger > 0.1) {  //I am using a deadband here because the trigger returns a double
+                //Spin up the flywheel
+                flywheelPower = FLYWHEEL_POWER;
+            }
+            else if (gamepad1.right_bumper == true) {
+                //keep the fly wheel spinning
+                flywheelPower = FLYWHEEL_POWER;
+                ringStopperPosition = OPEN_RING_STOPPER;
+                //intakePower = INTAKE_POWER;
+            }
+            else {
+                flywheelPower = 0;
+                ringStopperPosition = CLOSED_RING_STOPPER;
+            }
+
             //this section will be commented out untill we have an intake
             /*
             if(gamepad1.x == true){
-                intakeReleasePosition = INTAKE_RELEASE_OPEN_POSIION;
+                intakeReleasePosition = INTAKE_RELEASE_OPEN_POSITION;
             }
             else{
-                intakeReleasePosition = INTAKE_RELEASE_LATCHED_POSITIION;
+                intakeReleasePosition = INTAKE_RELEASE_LATCHED_POSITION;
             }
             */
 
