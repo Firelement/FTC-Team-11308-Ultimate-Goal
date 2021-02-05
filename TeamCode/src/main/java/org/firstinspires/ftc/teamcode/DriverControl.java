@@ -49,8 +49,8 @@ public class DriverControl extends LinearOpMode {
     //If you have a value that stays constant is is good practice to make it a constant and
     //define it at the beginning of the program where it can easily accessed.
     private final double LIFT_POWER = 0.6;
-    private final double CLOSED_HAND_POSITION = 0.0;
-    private final double OPEN_HAND_POSITION = 0.5;
+    private final double CLOSED_HAND_POSITION = 0.28;
+    private final double OPEN_HAND_POSITION = 0.7;
     private final double FLYWHEEL_POWER = 0.8;
     private final double INTAKE_POWER = 0.5;
     private final double CLOSED_RING_STOPPER = 0.5;// This value has not been tested yet.
@@ -121,8 +121,13 @@ public class DriverControl extends LinearOpMode {
         //Specify that motorOnButton is an input
         wobbleButton.setMode(DigitalChannel.Mode.INPUT);
 
-        //Set up a variable to hold the wobble hand position. It must be defined
-        //here so that the hand will hold its position after the gamepad button is released
+        //This Boolean is part of the odd logic that Andrew wants for the wobble goal lifter.
+        // Mode 1 is where the hand toggles between open and closed when <> or <> buttons are pressed
+        // Mode 2 is after the button on the hand has been pressed. The hand will default to
+        // closed but will open while the <> button is held.   <> means button not decided.
+        boolean isInMode2 = false;
+        //This variable allows the servo to toggle position while in mode 1 it must be defined here
+        // so that the hand will hold its position after the button is released.
         double wobbleHandPosition = CLOSED_HAND_POSITION;
 
         // Wait for the game to start (driver presses PLAY)
@@ -180,6 +185,16 @@ public class DriverControl extends LinearOpMode {
                 wobbleLifterPower = 0.0;
             }
 
+            //set the Intake power
+            // we have to set it above the code for the fly wheel(line 238-251) as that code may
+            //need to override this intake value to load the rings into the launcher.
+            if(gamepad1.right_bumper == true){
+                intakePower = INTAKE_POWER;
+            }
+            else{
+                intakePower = 0.0;
+            }
+
             // make sure that the power variables are within -1.0 and 1.0
             leftFrontPower    = Range.clip(leftFrontPower, -1.0, 1.0) ;
             rightFrontPower   = Range.clip(rightFrontPower, -1.0, 1.0) ;
@@ -187,31 +202,47 @@ public class DriverControl extends LinearOpMode {
             rightRearPower    = Range.clip(rightRearPower,-1.0,1.0);
 
             //set the Servo positions based on the driver control input
-            if(gamepad1.a == true){
-                wobbleHandPosition = OPEN_HAND_POSITION;
-            }
-            else if(gamepad1.b == true){
-                wobbleHandPosition = CLOSED_HAND_POSITION;
-            }
-            //This section will be commented out unless we decide we are going to use a button
-            //in the wobble goal hand
-            /*
-            else{
-                if(wobbleButton.getState() == true){
+            //if we are in mode 1
+            if (isInMode2 == false)
+            {
+                if (gamepad1.a == true) {
+                    wobbleHandPosition = OPEN_HAND_POSITION;
+                } else if (gamepad1.b == true) {
                     wobbleHandPosition = CLOSED_HAND_POSITION;
                 }
-                else{
-                    wobbleHandPosition = OPEN_HAND_POSITION;
+
+                //if the button on the hand is pressed, go to mode 2
+                if(wobbleButton.getState() == true){
+                    isInMode2 = true;
                 }
             }
-            */
+            //if we are in mode 2
+            else{
+                // if the gamepad button is pressed open the hand
+                if (gamepad1.a == true){
+                    wobbleHandPosition = OPEN_HAND_POSITION;
+                }
+                // else close the hand
+                else{
+                    wobbleHandPosition = CLOSED_HAND_POSITION;
+                }
+
+                //if the x button is pressed
+                if(gamepad1.x == true){
+                    // reset to mode 1 for the next wobble goal
+                    isInMode2 = false;
+                }
+            }
 
             //This section controls launching the ring
-            if(gamepad1.right_trigger > 0.1) {  //I am using a deadband here because the trigger returns a double
+            if(gamepad1.left_trigger > 0.1) {
+                //I am using a deadband here because the trigger returns a double
+                // STILL NEEDS TESTED
+
                 //Spin up the flywheel
                 flywheelPower = FLYWHEEL_POWER;
             }
-            else if (gamepad1.right_bumper == true) {
+            if (gamepad1.left_bumper == true) {
                 //keep the fly wheel spinning
                 flywheelPower = FLYWHEEL_POWER;
                 ringStopperPosition = OPEN_RING_STOPPER;
@@ -222,9 +253,9 @@ public class DriverControl extends LinearOpMode {
                 ringStopperPosition = CLOSED_RING_STOPPER;
             }
 
-            //this section will be commented out untill we have an intake
+            //this section will be commented out until we have an intake
             /*
-            if(gamepad1.x == true){
+            if(gamepad1.y == true){
                 intakeReleasePosition = INTAKE_RELEASE_OPEN_POSITION;
             }
             else{
@@ -241,8 +272,15 @@ public class DriverControl extends LinearOpMode {
             //set the power of the wobble lifter
             wobbleLifter.setPower(wobbleLifterPower);
 
+            //set the power of the fly wheel
+            flyWheel.setPower(flywheelPower);
+
+            //set the power of the intake
+            intake.setPower(intakePower);
+
             //Set the position of the servos
             wobbleHand.setPosition(wobbleHandPosition);
+            ringStopper.setPosition(ringStopperPosition);
             //intakeRelease.setPosition(intakeReleasePosition);
 
             // Show the elapsed game time and wheel power.
