@@ -37,7 +37,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 
-@TeleOp(name="Something doesn't matter what", group="Linear Opmode")
+@TeleOp(name="Mechanum Wheel ", group="Linear Opmode")
 public class Mechanum_Wheel_Drive extends LinearOpMode {
 
     // Declare Motor Classes
