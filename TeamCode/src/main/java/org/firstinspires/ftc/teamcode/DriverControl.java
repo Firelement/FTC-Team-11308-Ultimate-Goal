@@ -39,9 +39,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-//This program is disabled because it is not necessary for testing purposes right now.
-//This program is where the final driver control program will be implemented.
-@Disabled
 @TeleOp(name="Driver Control", group="Linear Opmode")
 public class DriverControl extends LinearOpMode {
 
@@ -250,7 +247,7 @@ public class DriverControl extends LinearOpMode {
             }
             else {
                 flywheelPower = 0;
-                ringStopperPosition = CLOSED_RING_STOPPER;
+                //ringStopperPosition = CLOSED_RING_STOPPER;
             }
 
             //this section will be commented out until we have an intake release servo
