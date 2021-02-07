@@ -48,11 +48,11 @@ public class DriverControl extends LinearOpMode {
     //Declare constants
     //If you have a value that stays constant is is good practice to make it a constant and
     //define it at the beginning of the program where it can easily accessed.
-    private final double LIFT_POWER = 0.6;
+    private final double LIFT_POWER = 0.6;//This is a temporary value until we have some testing results.
     private final double CLOSED_HAND_POSITION = 0.28;
     private final double OPEN_HAND_POSITION = 0.7;
-    private final double FLYWHEEL_POWER = 0.8;
-    private final double INTAKE_POWER = 0.5;
+    private final double FLYWHEEL_POWER = 0.8;//This value may need additional logic if we need to vary the power.
+    private final double INTAKE_POWER = 0.5;// This value has not been tested.
     private final double CLOSED_RING_STOPPER = 0.5;// This value has not been tested yet.
     private final double OPEN_RING_STOPPER = 0.0;// This value has not been tested yet either;
 
@@ -72,7 +72,7 @@ public class DriverControl extends LinearOpMode {
 
     //Declare Servo Classes
     private Servo wobbleHand;
-    private Servo ringStopper;
+    //private Servo ringStopper;
     //this servo is not currently part of the design
     //private Servo intakeRelease;
 
@@ -97,7 +97,7 @@ public class DriverControl extends LinearOpMode {
 
         //Initialize Servos
         wobbleHand = hardwareMap.get(Servo.class,"wobble_hand");
-        ringStopper = hardwareMap.get(Servo.class,"ring_stopper");
+        //ringStopper = hardwareMap.get(Servo.class,"ring_stopper");
         //intakeRelease = hardwareMap.get(Servo.class,"intake_release");
 
         //Initialize buttons
@@ -115,7 +115,7 @@ public class DriverControl extends LinearOpMode {
 
         //Initialize the Servo positions
         wobbleHand.setPosition(CLOSED_HAND_POSITION);
-        ringStopper.setPosition(CLOSED_RING_STOPPER);
+        //ringStopper.setPosition(CLOSED_RING_STOPPER);
         //intakeRelease.setPosition(INTAKE_RELEASE_LATCHED_POSITION);
 
         //Specify that motorOnButton is an input
@@ -156,7 +156,7 @@ public class DriverControl extends LinearOpMode {
 
             //Setup variables to hold the Servo Positions
             //double intakeReleasePosition;
-            double ringStopperPosition;
+            //double ringStopperPosition;
 
 
             // Assign the Game pad inputs
@@ -175,10 +175,10 @@ public class DriverControl extends LinearOpMode {
 
             //Set the wobble lifter power
             //Alternate but less clear code: if(gamepad1.left_bumper){
-            if(gamepad1.left_bumper == true){
+            if(gamepad1.dpad_up == true){
                 wobbleLifterPower = LIFT_POWER;
             }
-            else if(gamepad1.right_bumper == true){
+            else if(gamepad1.dpad_down == true){
                 wobbleLifterPower = -LIFT_POWER;
             }
             else{
@@ -245,7 +245,7 @@ public class DriverControl extends LinearOpMode {
             if (gamepad1.left_bumper == true) {
                 //keep the fly wheel spinning
                 flywheelPower = FLYWHEEL_POWER;
-                ringStopperPosition = OPEN_RING_STOPPER;
+                //ringStopperPosition = OPEN_RING_STOPPER;
                 //intakePower = INTAKE_POWER;
             }
             else {
@@ -253,7 +253,7 @@ public class DriverControl extends LinearOpMode {
                 ringStopperPosition = CLOSED_RING_STOPPER;
             }
 
-            //this section will be commented out until we have an intake
+            //this section will be commented out until we have an intake release servo
             /*
             if(gamepad1.y == true){
                 intakeReleasePosition = INTAKE_RELEASE_OPEN_POSITION;
@@ -280,7 +280,7 @@ public class DriverControl extends LinearOpMode {
 
             //Set the position of the servos
             wobbleHand.setPosition(wobbleHandPosition);
-            ringStopper.setPosition(ringStopperPosition);
+            //ringStopper.setPosition(ringStopperPosition);
             //intakeRelease.setPosition(intakeReleasePosition);
 
             // Show the elapsed game time and wheel power.
