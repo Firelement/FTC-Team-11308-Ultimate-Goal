@@ -45,9 +45,9 @@ public class DriverControl extends LinearOpMode {
     //Declare constants
     //If you have a value that stays constant is is good practice to make it a constant and
     //define it at the beginning of the program where it can easily accessed.
-    private final double LIFT_POWER = 0.6;//This is a temporary value until we have some testing results.
+    private final double LIFT_POWER = 0.8;//This is a temporary value until we have some testing results.
     private final double CLOSED_HAND_POSITION = 0.28;
-    private final double OPEN_HAND_POSITION = 0.7;
+    private final double OPEN_HAND_POSITION = 0.9;
     private final double FLYWHEEL_POWER = 0.8;//This value may need additional logic if we need to vary the power.
     private final double INTAKE_POWER = 0.5;// This value has not been tested.
     private final double CLOSED_RING_STOPPER = 0.5;// This value has not been tested yet.
@@ -86,9 +86,9 @@ public class DriverControl extends LinearOpMode {
         //Initialize the Motors
         leftFrontDrive  = hardwareMap.get(DcMotor.class, "left_front_drive");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
-        leftRearDrive  = hardwareMap.get(DcMotor.class, "left_rear_drive");
-        rightRearDrive = hardwareMap.get(DcMotor.class, "right_rear_drive");
-        wobbleLifter = hardwareMap.get(DcMotor.class,"wobble_Lifter");
+        leftRearDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
+        rightRearDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
+        wobbleLifter = hardwareMap.get(DcMotor.class,"wobble_lifter");
         intake = hardwareMap.get(DcMotor.class,"intake");
         flyWheel = hardwareMap.get(DcMotor.class,"fly_wheel");
 
@@ -209,7 +209,7 @@ public class DriverControl extends LinearOpMode {
                 }
 
                 //if the button on the hand is pressed, go to mode 2
-                if(wobbleButton.getState() == true){
+                if(wobbleButton.getState() == false){
                     isInMode2 = true;
                 }
             }
