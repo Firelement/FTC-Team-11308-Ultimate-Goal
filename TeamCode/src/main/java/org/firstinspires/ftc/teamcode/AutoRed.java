@@ -39,11 +39,13 @@ public class AutoRed extends LinearOpMode {
     private Servo latchServo;
 
     private ElapsedTime     runtime = new ElapsedTime();
-    static final double COUNTS_PER_INCH = 1075;
-    static final double     DRIVE_SPEED             = 0.4;
-    static final double     TURN_SPEED              = 0.4;
-    static final double INTAKE_WHEEL_SPEED = 1;
-    int rings = -1;
+    private static final double COUNTS_PER_INCH = 1075;
+    private static final double     DRIVE_SPEED_CONSTANT            = 0.4;
+    private static double LEFT_DRIVE_SPEED = DRIVE_SPEED_CONSTANT;
+    private static double RIGHT_DRIVE_SPEED = DRIVE_SPEED_CONSTANT;
+    private static final double     TURN_SPEED              = 0.4;
+    private static final double INTAKE_WHEEL_SPEED = 1;
+    private static int rings = -1;
 
     @Override
     public void runOpMode() {
@@ -220,20 +222,7 @@ public class AutoRed extends LinearOpMode {
                             rightFrontDrive.setPower(speed);
                             rightRearDrive.setPower(speed);
                         }
-                        if(Math.abs(-leftFrontDrive.getCurrentPosition() - rightFrontDrive.getCurrentPosition()) >=1000){
 
-                            if(rightFrontDrive.getCurrentPosition()>-leftFrontDrive.getCurrentPosition()){
-                                rightFrontDrive.setPower(-speed);
-                                rightRearDrive.setPower(-speed);
-                                leftFrontDrive.setPower(0);
-                                leftRearDrive.setPower(0);
-                            }else{
-                                rightFrontDrive.setPower(0);
-                                rightRearDrive.setPower(0);
-                                leftFrontDrive.setPower(-speed);
-                                leftRearDrive.setPower(-speed);
-                            }
-                        }
                         telemetry.addData("Left Encoder:", -leftFrontDrive.getCurrentPosition());
                         telemetry.addData("Right Encoder:", rightFrontDrive.getCurrentPosition());
                         telemetry.addData("Target Position:", newTarget);
