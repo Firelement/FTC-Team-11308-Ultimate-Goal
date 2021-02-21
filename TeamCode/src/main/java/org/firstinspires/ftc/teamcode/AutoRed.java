@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -220,6 +221,9 @@ public class AutoRed extends LinearOpMode {
                         leftSpeed = speed - DRIVE_ADJUSTMENT;
                         rightSpeed = speed + DRIVE_ADJUSTMENT;
 
+                        leftSpeed = Range.clip(leftSpeed, -1.0,1.0);
+                        rightSpeed = Range.clip(rightSpeed, -1.0,1.0);
+                        
                         if (-leftFrontDrive.getCurrentPosition() >= newTarget) {
                             leftFrontDrive.setPower(leftSpeed);
                             leftRearDrive.setPower(leftSpeed);
@@ -252,6 +256,9 @@ public class AutoRed extends LinearOpMode {
                             leftSpeed = speed - DRIVE_ADJUSTMENT;
                             rightSpeed = speed + DRIVE_ADJUSTMENT;
 
+                            leftSpeed = Range.clip(leftSpeed, -1.0,1.0);
+                            rightSpeed = Range.clip(rightSpeed, -1.0,1.0);
+
                             if (-leftFrontDrive.getCurrentPosition() <= newTarget) {
                                 leftFrontDrive.setPower(-leftSpeed);
                                 leftRearDrive.setPower(-leftSpeed);
@@ -260,7 +267,7 @@ public class AutoRed extends LinearOpMode {
                                 rightFrontDrive.setPower(-rightSpeed);
                                 rightRearDrive.setPower(-rightSpeed);
                             }
-                           
+
                             telemetry.addData("Left Encoder:", -leftFrontDrive.getCurrentPosition());
                             telemetry.addData("Right Encoder:", rightFrontDrive.getCurrentPosition());
                             telemetry.addData("Target Position:", newTarget);
@@ -274,8 +281,6 @@ public class AutoRed extends LinearOpMode {
             rightFrontDrive.setPower(0);
             leftRearDrive.setPower(0);
             rightRearDrive.setPower(0);
-
-
                 //  sleep(250);   // optional pause after each move
             }
         }
@@ -358,6 +363,7 @@ public class AutoRed extends LinearOpMode {
             //Set wobble claw position to be open
             latchServo.setPosition(servoPosition);
         }
+
     /**
      * Initialize the Vuforia localization engine.
      */
