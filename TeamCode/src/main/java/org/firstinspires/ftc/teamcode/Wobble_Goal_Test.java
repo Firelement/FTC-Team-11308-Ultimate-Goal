@@ -121,7 +121,7 @@ public class Wobble_Goal_Test extends LinearOpMode {
             }
 
             //If the wobble goal button is pressed go to mode 2
-            if(button.getState() == false){
+            if(button.getState() == false && isInMode2 == false){
                 isInMode2 = true;
             }
             //Allow the user to reset to Mode 1 when the X button is pressed
