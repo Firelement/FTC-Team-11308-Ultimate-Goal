@@ -40,12 +40,14 @@ public class AutoRed extends LinearOpMode {
 
     private ElapsedTime     runtime = new ElapsedTime();
     private static final double COUNTS_PER_INCH = 1075;
-    private static final double     DRIVE_SPEED_CONSTANT            = 0.4;
-    private static double LEFT_DRIVE_SPEED = DRIVE_SPEED_CONSTANT;
-    private static double RIGHT_DRIVE_SPEED = DRIVE_SPEED_CONSTANT;
+    private static final double     DRIVE_SPEED            = 0.4;
     private static final double     TURN_SPEED              = 0.4;
     private static final double INTAKE_WHEEL_SPEED = 1;
     private static int rings = -1;
+
+    private static double DRIVE_ADJUSTMENT = 0;
+    //Variable that dictates how much power adjustment will be added based on encoder difference in odometry
+    private static final double POWER_ADJUSTMENT_CONSTANT = 2000.0;
 
     @Override
     public void runOpMode() {
@@ -92,7 +94,7 @@ public class AutoRed extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-            encoderDriveY(DRIVE_SPEED_CONSTANT, 50, 30);
+            encoderDriveY(DRIVE_SPEED, 50, 30);
 /*
         // Step through each leg of the path,
         setWobbleClawPosition(CLOSED_SERVO_POSITION);
@@ -195,16 +197,15 @@ public class AutoRed extends LinearOpMode {
     }
         public void encoderDriveY(double speed, double inches, double timeoutS) {
         int newTarget;
+        double leftSpeed;
+        double rightSpeed;
             // Determine new target position, and pass to motor controller
             //This will be target position for both motors but will be determined by the right motor
             newTarget = rightFrontDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
-
             // Ensure that the opmode is still active
         if (opModeIsActive()) {
-
              //reset runtime
                 runtime.reset();
-
                 if (inches <= 0) { //If inches is negative, robot moves backwards
 
                     while (opModeIsActive() && (-leftFrontDrive.getCurrentPosition() >= newTarget || rightFrontDrive.getCurrentPosition() >= newTarget && (runtime.seconds() < timeoutS))) {
@@ -214,13 +215,18 @@ public class AutoRed extends LinearOpMode {
                         leftRearDrive.setPower(0);
                         rightRearDrive.setPower(0);
 
+                        //Dynamically scale speed based on difference between encoders
+                        DRIVE_ADJUSTMENT = (-leftFrontDrive.getCurrentPosition() - rightFrontDrive.getCurrentPosition())/POWER_ADJUSTMENT_CONSTANT;
+                        leftSpeed = speed - DRIVE_ADJUSTMENT;
+                        rightSpeed = speed + DRIVE_ADJUSTMENT;
+
                         if (-leftFrontDrive.getCurrentPosition() >= newTarget) {
-                            leftFrontDrive.setPower(speed);
-                            leftRearDrive.setPower(speed);
+                            leftFrontDrive.setPower(leftSpeed);
+                            leftRearDrive.setPower(leftSpeed);
                         }
                         if (rightFrontDrive.getCurrentPosition() >= newTarget) {
-                            rightFrontDrive.setPower(speed);
-                            rightRearDrive.setPower(speed);
+                            rightFrontDrive.setPower(rightSpeed);
+                            rightRearDrive.setPower(rightSpeed);
                         }
 
                         telemetry.addData("Left Encoder:", -leftFrontDrive.getCurrentPosition());
@@ -240,27 +246,21 @@ public class AutoRed extends LinearOpMode {
                             leftRearDrive.setPower(0);
                             rightRearDrive.setPower(0);
 
+
+                            //Dynamically scale speed based on difference between encoders
+                            DRIVE_ADJUSTMENT = (-leftFrontDrive.getCurrentPosition() - rightFrontDrive.getCurrentPosition())/POWER_ADJUSTMENT_CONSTANT;
+                            leftSpeed = speed - DRIVE_ADJUSTMENT;
+                            rightSpeed = speed + DRIVE_ADJUSTMENT;
+
                             if (-leftFrontDrive.getCurrentPosition() <= newTarget) {
-                                leftFrontDrive.setPower(-speed);
-                                leftRearDrive.setPower(-speed);
+                                leftFrontDrive.setPower(-leftSpeed);
+                                leftRearDrive.setPower(-leftSpeed);
                             }
                             if (rightFrontDrive.getCurrentPosition() <= newTarget) {
-                                rightFrontDrive.setPower(-speed);
-                                rightRearDrive.setPower(-speed);
+                                rightFrontDrive.setPower(-rightSpeed);
+                                rightRearDrive.setPower(-rightSpeed);
                             }
-                            if(Math.abs(-leftFrontDrive.getCurrentPosition() - rightFrontDrive.getCurrentPosition()) >=1000){
-                                if(rightFrontDrive.getCurrentPosition()>-leftFrontDrive.getCurrentPosition()){
-                                    rightFrontDrive.setPower(speed);
-                                    rightRearDrive.setPower(speed);
-                                    leftFrontDrive.setPower(0);
-                                    leftRearDrive.setPower(0);
-                                }else{
-                                    rightFrontDrive.setPower(0);
-                                    rightRearDrive.setPower(0);
-                                    leftFrontDrive.setPower(speed);
-                                    leftRearDrive.setPower(speed);
-                                }
-                            }
+                           
                             telemetry.addData("Left Encoder:", -leftFrontDrive.getCurrentPosition());
                             telemetry.addData("Right Encoder:", rightFrontDrive.getCurrentPosition());
                             telemetry.addData("Target Position:", newTarget);
