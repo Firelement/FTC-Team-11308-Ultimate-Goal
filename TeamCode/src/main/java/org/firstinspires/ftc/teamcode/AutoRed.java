@@ -92,7 +92,7 @@ public class AutoRed extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-            encoderDriveY(DRIVE_SPEED, 50, 30);
+            encoderDriveY(DRIVE_SPEED_CONSTANT, 50, 30);
 /*
         // Step through each leg of the path,
         setWobbleClawPosition(CLOSED_SERVO_POSITION);
