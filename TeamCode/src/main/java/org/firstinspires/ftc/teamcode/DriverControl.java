@@ -35,9 +35,13 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(name="Driver Control", group="Linear Opmode")
 public class DriverControl extends LinearOpMode {
@@ -76,6 +80,9 @@ public class DriverControl extends LinearOpMode {
     //Declare Buttons
     private DigitalChannel wobbleButton;
 
+    //Declare Color Sensor
+    NormalizedColorSensor colorSensor;
+
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -99,6 +106,9 @@ public class DriverControl extends LinearOpMode {
 
         //Initialize buttons
         wobbleButton = hardwareMap.get(DigitalChannel.class,"wobble_button");
+
+        //Color Sensor
+        colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
 
         // Most robots need the motors on one side to be reversed to drive properly
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -126,6 +136,9 @@ public class DriverControl extends LinearOpMode {
         //This variable allows the servo to toggle position while in mode 1 it must be defined here
         // so that the hand will hold its position after the button is released.
         double wobbleHandPosition = CLOSED_HAND_POSITION;
+
+        boolean isInSlowMode = false;
+        boolean oldYbuttonState = false;
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -170,6 +183,19 @@ public class DriverControl extends LinearOpMode {
             rightFrontPower = drive - rotate - strafe;
             rightRearPower = drive - rotate + strafe;
 
+            //allow the user to toggle between slow and fast modes
+            if(gamepad1.y == true && oldYbuttonState == false){
+                isInSlowMode = !isInSlowMode;
+            }
+            oldYbuttonState = gamepad1.y;
+            //if we are in slow mode for grabbing the wobble goal
+            if(isInSlowMode == true){
+                leftFrontPower *= .4;
+                leftRearPower *= .4;
+                rightFrontPower *= .4;
+                rightRearPower *= .4;
+            }
+
             //Set the wobble lifter power
             //Alternate but less clear code: if(gamepad1.left_bumper){
             if(gamepad1.dpad_up == true){
@@ -209,7 +235,7 @@ public class DriverControl extends LinearOpMode {
                 }
 
                 //if the button on the hand is pressed, go to mode 2
-                if(wobbleButton.getState() == false){
+                if(((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM) <=0.65){
                     isInMode2 = true;
                 }
             }
@@ -286,6 +312,8 @@ public class DriverControl extends LinearOpMode {
             telemetry.addData("Right Front Motor Power:",rightFrontPower);
             telemetry.addData("Left Rear Motor Power:",leftRearPower);
             telemetry.addData("Right Rear Motor Power:",rightRearPower);
+            telemetry.addData("Button state:",wobbleButton.getState());
+            telemetry.addData("Distance (cm)", "%.3f", ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM));
             telemetry.update();
         }
     }
