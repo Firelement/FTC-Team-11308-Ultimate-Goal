@@ -30,11 +30,9 @@
 package org.firstinspires.ftc.teamcode;
 
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -56,6 +54,8 @@ public class DriverControl extends LinearOpMode {
     private final double INTAKE_POWER = 0.5;// This value has not been tested.
     private final double CLOSED_RING_STOPPER = 0.5;// This value has not been tested yet.
     private final double OPEN_RING_STOPPER = 0.0;// This value has not been tested yet either;
+    private final double SLOW_MODE_CONSTANT = 0.4;//This value is used to scale down the motor power
+    private final double SENSOR_DISTANCE = 0.65;
 
     //We may need a servo to release the intake.
     //private final double INTAKE_RELEASE_LATCHED_POSITION = 0.3;
@@ -76,10 +76,7 @@ public class DriverControl extends LinearOpMode {
     //private Servo ringStopper;
     //this servo is not currently part of the design
     //private Servo intakeRelease;
-
-    //Declare Buttons
-    private DigitalChannel wobbleButton;
-
+    
     //Declare Color Sensor
     NormalizedColorSensor colorSensor;
 
@@ -104,9 +101,6 @@ public class DriverControl extends LinearOpMode {
         //ringStopper = hardwareMap.get(Servo.class,"ring_stopper");
         //intakeRelease = hardwareMap.get(Servo.class,"intake_release");
 
-        //Initialize buttons
-        wobbleButton = hardwareMap.get(DigitalChannel.class,"wobble_button");
-
         //Color Sensor
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
 
@@ -125,9 +119,6 @@ public class DriverControl extends LinearOpMode {
         //ringStopper.setPosition(CLOSED_RING_STOPPER);
         //intakeRelease.setPosition(INTAKE_RELEASE_LATCHED_POSITION);
 
-        //Specify that motorOnButton is an input
-        wobbleButton.setMode(DigitalChannel.Mode.INPUT);
-
         //This Boolean is part of the odd logic that Andrew wants for the wobble goal lifter.
         // Mode 1 is where the hand toggles between open and closed when <> or <> buttons are pressed
         // Mode 2 is after the button on the hand has been pressed. The hand will default to
@@ -137,6 +128,7 @@ public class DriverControl extends LinearOpMode {
         // so that the hand will hold its position after the button is released.
         double wobbleHandPosition = CLOSED_HAND_POSITION;
 
+        //These variables are necessary for slow mode to work.
         boolean isInSlowMode = false;
         boolean oldYbuttonState = false;
 
@@ -190,10 +182,10 @@ public class DriverControl extends LinearOpMode {
             oldYbuttonState = gamepad1.y;
             //if we are in slow mode for grabbing the wobble goal
             if(isInSlowMode == true){
-                leftFrontPower *= .4;
-                leftRearPower *= .4;
-                rightFrontPower *= .4;
-                rightRearPower *= .4;
+                leftFrontPower *= SLOW_MODE_CONSTANT;
+                leftRearPower *= SLOW_MODE_CONSTANT;
+                rightFrontPower *= SLOW_MODE_CONSTANT;
+                rightRearPower *= SLOW_MODE_CONSTANT;
             }
 
             //Set the wobble lifter power
@@ -235,7 +227,7 @@ public class DriverControl extends LinearOpMode {
                 }
 
                 //if the button on the hand is pressed, go to mode 2
-                if(((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM) <=0.65){
+                if(((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM) <= SENSOR_DISTANCE){
                     isInMode2 = true;
                 }
             }
@@ -312,7 +304,6 @@ public class DriverControl extends LinearOpMode {
             telemetry.addData("Right Front Motor Power:",rightFrontPower);
             telemetry.addData("Left Rear Motor Power:",leftRearPower);
             telemetry.addData("Right Rear Motor Power:",rightRearPower);
-            telemetry.addData("Button state:",wobbleButton.getState());
             telemetry.addData("Distance (cm)", "%.3f", ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM));
             telemetry.update();
         }
