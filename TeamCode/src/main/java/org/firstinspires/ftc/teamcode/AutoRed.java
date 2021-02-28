@@ -47,8 +47,8 @@ public class AutoRed extends LinearOpMode {
     private static int rings = -1;
 
     private static double DRIVE_ADJUSTMENT = 0;
-    //Variable that dictates how much power adjustment will be added based on encoder difference in odometry
-    private static final double POWER_ADJUSTMENT_CONSTANT = 2000.0;
+    //Variable that dictates how much power adjustment will e added based on encoder difference in odometry
+    private static final double POWER_ADJUSTMENT_CONSTANT = 10000.0;
 
     @Override
     public void runOpMode() {
@@ -201,15 +201,15 @@ public class AutoRed extends LinearOpMode {
         double leftSpeed;
         double rightSpeed;
             // Determine new target position, and pass to motor controller
-            //This will be target position for both motors but will be determined by the right motor
-            newTarget = rightFrontDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
+            //This will be target position for both motors but will be determined by the left motor
+            newTarget = leftFrontDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
             // Ensure that the opmode is still active
         if (opModeIsActive()) {
              //reset runtime
                 runtime.reset();
                 if (inches <= 0) { //If inches is negative, robot moves backwards
 
-                    while (opModeIsActive() && (-leftFrontDrive.getCurrentPosition() >= newTarget || rightFrontDrive.getCurrentPosition() >= newTarget && (runtime.seconds() < timeoutS))) {
+                    while (opModeIsActive() && (leftFrontDrive.getCurrentPosition() >= newTarget || -rightFrontDrive.getCurrentPosition() >= newTarget && (runtime.seconds() < timeoutS))) {
                         // turn off motors and only turn on if needed to move
                         leftFrontDrive.setPower(0);
                         rightFrontDrive.setPower(0);
@@ -217,7 +217,7 @@ public class AutoRed extends LinearOpMode {
                         rightRearDrive.setPower(0);
 
                         //Dynamically scale speed based on difference between encoders
-                        DRIVE_ADJUSTMENT = (-leftFrontDrive.getCurrentPosition() - rightFrontDrive.getCurrentPosition())/POWER_ADJUSTMENT_CONSTANT;
+                        DRIVE_ADJUSTMENT = (leftFrontDrive.getCurrentPosition() + rightFrontDrive.getCurrentPosition())/POWER_ADJUSTMENT_CONSTANT;
                         leftSpeed = speed - DRIVE_ADJUSTMENT;
                         rightSpeed = speed + DRIVE_ADJUSTMENT;
 
@@ -233,8 +233,8 @@ public class AutoRed extends LinearOpMode {
                             rightRearDrive.setPower(rightSpeed);
                         }
 
-                        telemetry.addData("Left Encoder:", -leftFrontDrive.getCurrentPosition());
-                        telemetry.addData("Right Encoder:", rightFrontDrive.getCurrentPosition());
+                        telemetry.addData("Left Encoder:", leftFrontDrive.getCurrentPosition());
+                        telemetry.addData("Right Encoder:",- rightFrontDrive.getCurrentPosition());
                         telemetry.addData("Target Position:", newTarget);
                         telemetry.addLine("Target Direction: Reverse");
                         telemetry.update();
@@ -243,7 +243,7 @@ public class AutoRed extends LinearOpMode {
                 }
                 } else { //If inches are positive, robot moves forward
 
-                        while (opModeIsActive()&&( -leftFrontDrive.getCurrentPosition() <= newTarget || rightFrontDrive.getCurrentPosition() <= newTarget && (runtime.seconds() < timeoutS))) {
+                        while (opModeIsActive()&&( leftFrontDrive.getCurrentPosition() <= newTarget || -rightFrontDrive.getCurrentPosition() <= newTarget && (runtime.seconds() < timeoutS))) {
                             // turn off motors and only turn on if needed to move
                             leftFrontDrive.setPower(0);
                             rightFrontDrive.setPower(0);
@@ -252,7 +252,7 @@ public class AutoRed extends LinearOpMode {
 
 
                             //Dynamically scale speed based on difference between encoders
-                            DRIVE_ADJUSTMENT = (-leftFrontDrive.getCurrentPosition() - rightFrontDrive.getCurrentPosition())/POWER_ADJUSTMENT_CONSTANT;
+                            DRIVE_ADJUSTMENT = (leftFrontDrive.getCurrentPosition() + rightFrontDrive.getCurrentPosition())/POWER_ADJUSTMENT_CONSTANT;
                             leftSpeed = speed - DRIVE_ADJUSTMENT;
                             rightSpeed = speed + DRIVE_ADJUSTMENT;
 
@@ -268,8 +268,8 @@ public class AutoRed extends LinearOpMode {
                                 rightRearDrive.setPower(-rightSpeed);
                             }
 
-                            telemetry.addData("Left Encoder:", -leftFrontDrive.getCurrentPosition());
-                            telemetry.addData("Right Encoder:", rightFrontDrive.getCurrentPosition());
+                            telemetry.addData("Left Encoder:", leftFrontDrive.getCurrentPosition());
+                            telemetry.addData("Right Encoder:", -rightFrontDrive.getCurrentPosition());
                             telemetry.addData("Target Position:", newTarget);
                             telemetry.addLine("Target Direction: Forward");
                             telemetry.update();
