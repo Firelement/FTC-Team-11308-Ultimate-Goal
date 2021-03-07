@@ -132,7 +132,8 @@ public class DriverControl extends LinearOpMode {
         boolean isInMode2 = false;
         //This variable allows the servo to toggle position while in mode 1 it must be defined here
         // so that the hand will hold its position after the button is released.
-        double  = CLOSED_HAND_POSITION;
+        double leftServoPos = CLOSED_LEFT_SERVO;
+        double rightServoPos = CLOSED_RIGHT_SERVO;
 
         //These variables are necessary for slow mode to work.
         boolean isInSlowMode = false;
@@ -223,37 +224,41 @@ public class DriverControl extends LinearOpMode {
             rightRearPower    = Range.clip(rightRearPower,-1.0,1.0);
 
             //set the Servo positions based on the driver control input
-            //if we are in mode 1
-            if (isInMode2 == false)
-            {
+            //if we are in mode 1 use A andB buttons to toggle open and close
+            if(isInMode2 == false){
+                if(gamepad1.a == true){
+                    leftServoPos = OPEN_LEFT_SERVO;
+                    rightServoPos = OPEN_RIGHT_SERVO;
+                }
+                else if(gamepad1.b == true){
+                    leftServoPos = CLOSED_LEFT_SERVO;
+                    rightServoPos = CLOSED_RIGHT_SERVO;
+                }
+            }
+            //If we are in mode 2 set the default position to closed. Allow the user to open the hand
+            //by holding the A button.
+            else {
                 if (gamepad1.a == true) {
-                    wobbleHandPosition = OPEN_HAND_POSITION;
-                } else if (gamepad1.b == true) {
-                    wobbleHandPosition = CLOSED_HAND_POSITION;
+                    leftServoPos = OPEN_LEFT_SERVO;
+                    rightServoPos = OPEN_RIGHT_SERVO;
                 }
-
-                //if the button on the hand is pressed, go to mode 2
-                if(((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM) <= SENSOR_DISTANCE){
-                    isInMode2 = true;
+                else {
+                    leftServoPos = CLOSED_LEFT_SERVO;
+                    rightServoPos = CLOSED_RIGHT_SERVO;
                 }
             }
-            //if we are in mode 2
-            else{
-                // if the gamepad button is pressed open the hand
-                if (gamepad1.a == true){
-                    wobbleHandPosition = OPEN_HAND_POSITION;
-                }
-                // else close the hand
-                else{
-                    wobbleHandPosition = CLOSED_HAND_POSITION;
-                }
-
-                //if the x button is pressed
-                if(gamepad1.x == true){
-                    // reset to mode 1 for the next wobble goal
-                    isInMode2 = false;
-                }
+            //If the wobble goal button is pressed go to mode 2
+            if(((DistanceSensor)colorSensor).getDistance(DistanceUnit.CM) <= WOBBLE_GOAL_DIST && rightServoPos == OPEN_RIGHT_SERVO){
+                isInMode2 = true;
             }
+            //Allow the user to reset to Mode 1 when the X button is pressed
+            if(gamepad1.x == true){
+                isInMode2 = false;
+            }
+
+            //Set the position of the servos
+            leftServo.setPosition(leftServoPos);
+            rightServo.setPosition(rightServoPos);
 
             //This section controls launching the ring
             if(gamepad1.left_trigger > 0.1) {
@@ -300,7 +305,8 @@ public class DriverControl extends LinearOpMode {
             intake.setPower(intakePower);
 
             //Set the position of the servos
-            wobbleHand.setPosition(wobbleHandPosition);
+            leftServo.setPosition(leftServoPos);
+            rightServo.setPosition(rightServoPos);
             //ringStopper.setPosition(ringStopperPosition);
             //intakeRelease.setPosition(intakeReleasePosition);
 
