@@ -47,7 +47,7 @@ public class AutoRed extends LinearOpMode {
     private static int rings = -1;
 
     private static double DRIVE_ADJUSTMENT = 0;
-    //Variable that dictates how much power adjustment will e added based on encoder difference in odometry
+    //Variable that dictates how much power adjustment will be added based on encoder difference in odometry
     private static final double POWER_ADJUSTMENT_CONSTANT = 10000.0;
 
     @Override
@@ -95,8 +95,6 @@ public class AutoRed extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-            encoderDriveY(DRIVE_SPEED, 50, 30);
-/*
         // Step through each leg of the path,
         setWobbleClawPosition(CLOSED_SERVO_POSITION);
         //Drive to see rings - Encoder Drive
@@ -119,7 +117,7 @@ public class AutoRed extends LinearOpMode {
         shootRings(1);
         //Determine where to place wobble goal and next autonomous steps
          switch(rings){
-             case 0:
+             case 0: //0 Rings
                  //Drive to wobble goal deposit area
                  encoderDriveX(DRIVE_SPEED, 55, 5);
                  encoderDriveY(DRIVE_SPEED, 5, 1);
@@ -128,7 +126,7 @@ public class AutoRed extends LinearOpMode {
                  //Park on line
                  encoderDriveY(DRIVE_SPEED, -3, 1);
                  break;
-             case 1:
+             case 1: //1 Ring
                  //Drive to wobble goal deposit area
                  encoderDriveX(DRIVE_SPEED, 26, 3);
                  encoderDriveY(DRIVE_SPEED, 25, 3);
@@ -145,8 +143,8 @@ public class AutoRed extends LinearOpMode {
                  //Park on line
                  encoderDriveY(DRIVE_SPEED, 5, 1);
                  break;
-             case 4:
-                 //Drive to wobble goal deposit area
+             case 4: //4 Rings
+                  //Drive to wobble goal deposit area
                  encoderDriveX(DRIVE_SPEED, 55, 5);
                  encoderDriveY(DRIVE_SPEED, 48, 5);
                  //Drop wobble goal
@@ -168,7 +166,7 @@ public class AutoRed extends LinearOpMode {
                  //Park on line
                  encoderDriveY(DRIVE_SPEED, 5, 1);
                  break;
-         }*/
+         }
 
         /*If: 4 rings
         Deposit wobble goal far - Open Wobble Claw
@@ -360,7 +358,6 @@ public class AutoRed extends LinearOpMode {
         }
 
         public void setWobbleClawPosition(double servoPosition){
-            //Set wobble claw position to be open
             latchServo.setPosition(servoPosition);
         }
 
