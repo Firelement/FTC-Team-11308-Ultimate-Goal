@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -40,12 +41,14 @@ public class AutoRed extends LinearOpMode {
 
     private ElapsedTime     runtime = new ElapsedTime();
     private static final double COUNTS_PER_INCH = 1075;
-    private static final double     DRIVE_SPEED_CONSTANT            = 0.4;
-    private static double LEFT_DRIVE_SPEED = DRIVE_SPEED_CONSTANT;
-    private static double RIGHT_DRIVE_SPEED = DRIVE_SPEED_CONSTANT;
+    private static final double     DRIVE_SPEED            = 0.4;
     private static final double     TURN_SPEED              = 0.4;
     private static final double INTAKE_WHEEL_SPEED = 1;
     private static int rings = -1;
+
+    private static double DRIVE_ADJUSTMENT = 0;
+    //Variable that dictates how much power adjustment will be added based on encoder difference in odometry
+    private static final double POWER_ADJUSTMENT_CONSTANT = 10000.0;
 
     @Override
     public void runOpMode() {
@@ -92,8 +95,6 @@ public class AutoRed extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-            encoderDriveY(DRIVE_SPEED_CONSTANT, 50, 30);
-/*
         // Step through each leg of the path,
         setWobbleClawPosition(CLOSED_SERVO_POSITION);
         //Drive to see rings - Encoder Drive
@@ -116,7 +117,7 @@ public class AutoRed extends LinearOpMode {
         shootRings(1);
         //Determine where to place wobble goal and next autonomous steps
          switch(rings){
-             case 0:
+             case 0: //0 Rings
                  //Drive to wobble goal deposit area
                  encoderDriveX(DRIVE_SPEED, 55, 5);
                  encoderDriveY(DRIVE_SPEED, 5, 1);
@@ -125,7 +126,7 @@ public class AutoRed extends LinearOpMode {
                  //Park on line
                  encoderDriveY(DRIVE_SPEED, -3, 1);
                  break;
-             case 1:
+             case 1: //1 Ring
                  //Drive to wobble goal deposit area
                  encoderDriveX(DRIVE_SPEED, 26, 3);
                  encoderDriveY(DRIVE_SPEED, 25, 3);
@@ -142,8 +143,8 @@ public class AutoRed extends LinearOpMode {
                  //Park on line
                  encoderDriveY(DRIVE_SPEED, 5, 1);
                  break;
-             case 4:
-                 //Drive to wobble goal deposit area
+             case 4: //4 Rings
+                  //Drive to wobble goal deposit area
                  encoderDriveX(DRIVE_SPEED, 55, 5);
                  encoderDriveY(DRIVE_SPEED, 48, 5);
                  //Drop wobble goal
@@ -165,7 +166,7 @@ public class AutoRed extends LinearOpMode {
                  //Park on line
                  encoderDriveY(DRIVE_SPEED, 5, 1);
                  break;
-         }*/
+         }
 
         /*If: 4 rings
         Deposit wobble goal far - Open Wobble Claw
@@ -195,36 +196,43 @@ public class AutoRed extends LinearOpMode {
     }
         public void encoderDriveY(double speed, double inches, double timeoutS) {
         int newTarget;
+        double leftSpeed;
+        double rightSpeed;
             // Determine new target position, and pass to motor controller
-            //This will be target position for both motors but will be determined by the right motor
-            newTarget = rightFrontDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
-
+            //This will be target position for both motors but will be determined by the left motor
+            newTarget = leftFrontDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
             // Ensure that the opmode is still active
         if (opModeIsActive()) {
-
              //reset runtime
                 runtime.reset();
-
                 if (inches <= 0) { //If inches is negative, robot moves backwards
 
-                    while (opModeIsActive() && (-leftFrontDrive.getCurrentPosition() >= newTarget || rightFrontDrive.getCurrentPosition() >= newTarget && (runtime.seconds() < timeoutS))) {
+                    while (opModeIsActive() && (leftFrontDrive.getCurrentPosition() >= newTarget || -rightFrontDrive.getCurrentPosition() >= newTarget && (runtime.seconds() < timeoutS))) {
                         // turn off motors and only turn on if needed to move
                         leftFrontDrive.setPower(0);
                         rightFrontDrive.setPower(0);
                         leftRearDrive.setPower(0);
                         rightRearDrive.setPower(0);
 
+                        //Dynamically scale speed based on difference between encoders
+                        DRIVE_ADJUSTMENT = (leftFrontDrive.getCurrentPosition() + rightFrontDrive.getCurrentPosition())/POWER_ADJUSTMENT_CONSTANT;
+                        leftSpeed = speed - DRIVE_ADJUSTMENT;
+                        rightSpeed = speed + DRIVE_ADJUSTMENT;
+
+                        leftSpeed = Range.clip(leftSpeed, -1.0,1.0);
+                        rightSpeed = Range.clip(rightSpeed, -1.0,1.0);
+                        
                         if (-leftFrontDrive.getCurrentPosition() >= newTarget) {
-                            leftFrontDrive.setPower(speed);
-                            leftRearDrive.setPower(speed);
+                            leftFrontDrive.setPower(leftSpeed);
+                            leftRearDrive.setPower(leftSpeed);
                         }
                         if (rightFrontDrive.getCurrentPosition() >= newTarget) {
-                            rightFrontDrive.setPower(speed);
-                            rightRearDrive.setPower(speed);
+                            rightFrontDrive.setPower(rightSpeed);
+                            rightRearDrive.setPower(rightSpeed);
                         }
 
-                        telemetry.addData("Left Encoder:", -leftFrontDrive.getCurrentPosition());
-                        telemetry.addData("Right Encoder:", rightFrontDrive.getCurrentPosition());
+                        telemetry.addData("Left Encoder:", leftFrontDrive.getCurrentPosition());
+                        telemetry.addData("Right Encoder:",- rightFrontDrive.getCurrentPosition());
                         telemetry.addData("Target Position:", newTarget);
                         telemetry.addLine("Target Direction: Reverse");
                         telemetry.update();
@@ -233,36 +241,33 @@ public class AutoRed extends LinearOpMode {
                 }
                 } else { //If inches are positive, robot moves forward
 
-                        while (opModeIsActive()&&( -leftFrontDrive.getCurrentPosition() <= newTarget || rightFrontDrive.getCurrentPosition() <= newTarget && (runtime.seconds() < timeoutS))) {
+                        while (opModeIsActive()&&( leftFrontDrive.getCurrentPosition() <= newTarget || -rightFrontDrive.getCurrentPosition() <= newTarget && (runtime.seconds() < timeoutS))) {
                             // turn off motors and only turn on if needed to move
                             leftFrontDrive.setPower(0);
                             rightFrontDrive.setPower(0);
                             leftRearDrive.setPower(0);
                             rightRearDrive.setPower(0);
 
+
+                            //Dynamically scale speed based on difference between encoders
+                            DRIVE_ADJUSTMENT = (leftFrontDrive.getCurrentPosition() + rightFrontDrive.getCurrentPosition())/POWER_ADJUSTMENT_CONSTANT;
+                            leftSpeed = speed - DRIVE_ADJUSTMENT;
+                            rightSpeed = speed + DRIVE_ADJUSTMENT;
+
+                            leftSpeed = Range.clip(leftSpeed, -1.0,1.0);
+                            rightSpeed = Range.clip(rightSpeed, -1.0,1.0);
+
                             if (-leftFrontDrive.getCurrentPosition() <= newTarget) {
-                                leftFrontDrive.setPower(-speed);
-                                leftRearDrive.setPower(-speed);
+                                leftFrontDrive.setPower(-leftSpeed);
+                                leftRearDrive.setPower(-leftSpeed);
                             }
                             if (rightFrontDrive.getCurrentPosition() <= newTarget) {
-                                rightFrontDrive.setPower(-speed);
-                                rightRearDrive.setPower(-speed);
+                                rightFrontDrive.setPower(-rightSpeed);
+                                rightRearDrive.setPower(-rightSpeed);
                             }
-                            if(Math.abs(-leftFrontDrive.getCurrentPosition() - rightFrontDrive.getCurrentPosition()) >=1000){
-                                if(rightFrontDrive.getCurrentPosition()>-leftFrontDrive.getCurrentPosition()){
-                                    rightFrontDrive.setPower(speed);
-                                    rightRearDrive.setPower(speed);
-                                    leftFrontDrive.setPower(0);
-                                    leftRearDrive.setPower(0);
-                                }else{
-                                    rightFrontDrive.setPower(0);
-                                    rightRearDrive.setPower(0);
-                                    leftFrontDrive.setPower(speed);
-                                    leftRearDrive.setPower(speed);
-                                }
-                            }
-                            telemetry.addData("Left Encoder:", -leftFrontDrive.getCurrentPosition());
-                            telemetry.addData("Right Encoder:", rightFrontDrive.getCurrentPosition());
+
+                            telemetry.addData("Left Encoder:", leftFrontDrive.getCurrentPosition());
+                            telemetry.addData("Right Encoder:", -rightFrontDrive.getCurrentPosition());
                             telemetry.addData("Target Position:", newTarget);
                             telemetry.addLine("Target Direction: Forward");
                             telemetry.update();
@@ -274,8 +279,6 @@ public class AutoRed extends LinearOpMode {
             rightFrontDrive.setPower(0);
             leftRearDrive.setPower(0);
             rightRearDrive.setPower(0);
-
-
                 //  sleep(250);   // optional pause after each move
             }
         }
@@ -355,9 +358,9 @@ public class AutoRed extends LinearOpMode {
         }
 
         public void setWobbleClawPosition(double servoPosition){
-            //Set wobble claw position to be open
             latchServo.setPosition(servoPosition);
         }
+
     /**
      * Initialize the Vuforia localization engine.
      */
