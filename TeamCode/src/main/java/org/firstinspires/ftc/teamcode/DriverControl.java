@@ -101,11 +101,12 @@ public class DriverControl extends LinearOpMode {
         flyWheel = hardwareMap.get(DcMotor.class,"fly_wheel");
 
         //Initialize Servos
-        wobbleHand = hardwareMap.get(Servo.class,"wobble_hand");
         //ringStopper = hardwareMap.get(Servo.class,"ring_stopper");
         //intakeRelease = hardwareMap.get(Servo.class,"intake_release");
+        leftServo = hardwareMap.get(Servo.class,"leftServo");
+        rightServo = hardwareMap.get(Servo.class,"rightServo");
 
-        //Color Sensor
+        //Initialize Color sensor
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
 
         // Most robots need the motors on one side to be reversed to drive properly
@@ -119,7 +120,8 @@ public class DriverControl extends LinearOpMode {
         flyWheel.setDirection(DcMotor.Direction.FORWARD);
 
         //Initialize the Servo positions
-        wobbleHand.setPosition(CLOSED_HAND_POSITION);
+        leftServo.setPosition(CLOSED_LEFT_SERVO);
+        rightServo.setPosition(CLOSED_RIGHT_SERVO);
         //ringStopper.setPosition(CLOSED_RING_STOPPER);
         //intakeRelease.setPosition(INTAKE_RELEASE_LATCHED_POSITION);
 
@@ -130,7 +132,7 @@ public class DriverControl extends LinearOpMode {
         boolean isInMode2 = false;
         //This variable allows the servo to toggle position while in mode 1 it must be defined here
         // so that the hand will hold its position after the button is released.
-        double wobbleHandPosition = CLOSED_HAND_POSITION;
+        double  = CLOSED_HAND_POSITION;
 
         //These variables are necessary for slow mode to work.
         boolean isInSlowMode = false;
