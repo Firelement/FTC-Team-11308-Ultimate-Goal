@@ -41,8 +41,8 @@ public class AutoRed extends LinearOpMode {
 
     private ElapsedTime     runtime = new ElapsedTime();
     private static final double COUNTS_PER_INCH = 1075;
-    private static final double     DRIVE_SPEED            = 0.4;
-    private static final double     TURN_SPEED              = 0.4;
+    private static final double DRIVE_SPEED = 0.4;
+    private static final double TURN_SPEED = 0.3;
     private static final double INTAKE_WHEEL_SPEED = 1;
     private static int rings = -1;
 
@@ -188,8 +188,6 @@ public class AutoRed extends LinearOpMode {
         Deposit wobble goal closest - Open Wobble Claw
         Park on line - Encoder Drive
         */
-            //encoderDrive(TURN_SPEED,   50,  4.0);  //Forward 12 Inches with 4 Sec timeout
-
               telemetry.addData("Path", "Complete");
               telemetry.update();
 
