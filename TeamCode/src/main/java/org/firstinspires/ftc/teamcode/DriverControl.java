@@ -47,15 +47,17 @@ public class DriverControl extends LinearOpMode {
     //Declare constants
     //If you have a value that stays constant is is good practice to make it a constant and
     //define it at the beginning of the program where it can easily accessed.
-    private final double LIFT_POWER = 0.8;//This is a temporary value until we have some testing results.
-    private final double CLOSED_HAND_POSITION = 0.28;
-    private final double OPEN_HAND_POSITION = 0.9;
+    private final double LIFT_POWER = 0.8;
+    private final double CLOSED_LEFT_SERVO = 0.0;
+    private final double CLOSED_RIGHT_SERVO = 0.6;
+    private final double OPEN_LEFT_SERVO = 0.6;
+    private final double OPEN_RIGHT_SERVO = 0.0;
+    private final double WOBBLE_GOAL_DIST = 7.0;
     private final double FLYWHEEL_POWER = 0.8;//This value may need additional logic if we need to vary the power.
     private final double INTAKE_POWER = 0.5;// This value has not been tested.
     private final double CLOSED_RING_STOPPER = 0.5;// This value has not been tested yet.
     private final double OPEN_RING_STOPPER = 0.0;// This value has not been tested yet either;
     private final double SLOW_MODE_CONSTANT = 0.4;//This value is used to scale down the motor power
-    private final double SENSOR_DISTANCE = 0.65;
 
     //We may need a servo to release the intake.
     //private final double INTAKE_RELEASE_LATCHED_POSITION = 0.3;
@@ -72,13 +74,15 @@ public class DriverControl extends LinearOpMode {
     private DcMotor flyWheel;
 
     //Declare Servo Classes
-    private Servo wobbleHand;
     //private Servo ringStopper;
     //this servo is not currently part of the design
     //private Servo intakeRelease;
-    
-    //Declare Color Sensor
+    private Servo rightServo;
+    private Servo leftServo;
+
+    // Color sensor
     NormalizedColorSensor colorSensor;
+
 
     @Override
     public void runOpMode() {
