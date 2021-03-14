@@ -197,10 +197,10 @@ public class DriverControl extends LinearOpMode {
 
             //Set the wobble lifter power
             //Alternate but less clear code: if(gamepad1.left_bumper){
-            if(gamepad1.dpad_up == true){
+            if(gamepad2.right_bumper == true){
                 wobbleLifterPower = LIFT_POWER;
             }
-            else if(gamepad1.dpad_down == true){
+            else if(gamepad2.left_bumper == true){
                 wobbleLifterPower = -LIFT_POWER;
             }
             else{
@@ -212,6 +212,9 @@ public class DriverControl extends LinearOpMode {
             //need to override this intake value to load the rings into the launcher.
             if(gamepad1.right_bumper == true){
                 intakePower = INTAKE_POWER;
+            }
+            else if (gamepad1.left_bumper == true){
+                intakePower = -INTAKE_POWER;
             }
             else{
                 intakePower = 0.0;
@@ -226,11 +229,11 @@ public class DriverControl extends LinearOpMode {
             //set the Servo positions based on the driver control input
             //if we are in mode 1 use A andB buttons to toggle open and close
             if(isInMode2 == false){
-                if(gamepad1.a == true){
+                if(gamepad2.a == true){
                     leftServoPos = OPEN_LEFT_SERVO;
                     rightServoPos = OPEN_RIGHT_SERVO;
                 }
-                else if(gamepad1.b == true){
+                else if(gamepad2.b == true){
                     leftServoPos = CLOSED_LEFT_SERVO;
                     rightServoPos = CLOSED_RIGHT_SERVO;
                 }
@@ -238,7 +241,7 @@ public class DriverControl extends LinearOpMode {
             //If we are in mode 2 set the default position to closed. Allow the user to open the hand
             //by holding the A button.
             else {
-                if (gamepad1.a == true) {
+                if (gamepad2.a == true) {
                     leftServoPos = OPEN_LEFT_SERVO;
                     rightServoPos = OPEN_RIGHT_SERVO;
                 }
@@ -247,7 +250,7 @@ public class DriverControl extends LinearOpMode {
                     rightServoPos = CLOSED_RIGHT_SERVO;
                 }
             }
-            //If the wobble goal button is pressed go to mode 2
+            //If the color sensor senses the wobble goal and the hand is open, go to mode 2
             if(((DistanceSensor)colorSensor).getDistance(DistanceUnit.CM) <= WOBBLE_GOAL_DIST && rightServoPos == OPEN_RIGHT_SERVO){
                 isInMode2 = true;
             }
@@ -261,19 +264,18 @@ public class DriverControl extends LinearOpMode {
             rightServo.setPosition(rightServoPos);
 
             //This section controls launching the ring
-            if(gamepad1.left_trigger > 0.1) {
-                //I am using a deadband here because the trigger returns a double
-                // STILL NEEDS TESTED
-
-                //Spin up the flywheel
-                flywheelPower = FLYWHEEL_POWER;
-            }
-            if (gamepad1.left_bumper == true) {
+            // Release the ring
+            if (gamepad2.right_trigger > 0.2) {
                 //keep the fly wheel spinning
                 flywheelPower = FLYWHEEL_POWER;
                 //ringStopperPosition = OPEN_RING_STOPPER;
                 //intakePower = INTAKE_POWER;
             }
+            //Spin up the flywheel
+            else if(gamepad2.left_trigger > 0.2) {
+                flywheelPower = FLYWHEEL_POWER;
+            }
+            //Stop the flywheel
             else {
                 flywheelPower = 0;
                 //ringStopperPosition = CLOSED_RING_STOPPER;
@@ -310,13 +312,14 @@ public class DriverControl extends LinearOpMode {
             //ringStopper.setPosition(ringStopperPosition);
             //intakeRelease.setPosition(intakeReleasePosition);
 
-            // Show the elapsed game time and wheel power.
+            // Show the elapsed game time, wheel power and color sensor distance.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Left Front Motor Power:",leftFrontPower);
             telemetry.addData("Right Front Motor Power:",rightFrontPower);
             telemetry.addData("Left Rear Motor Power:",leftRearPower);
             telemetry.addData("Right Rear Motor Power:",rightRearPower);
-            telemetry.addData("Distance (cm)", "%.3f", ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM));
+            telemetry.addData("Distance (cm)", "%.3f",
+                    ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM));
             telemetry.update();
         }
     }
