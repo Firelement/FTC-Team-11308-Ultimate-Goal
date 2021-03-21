@@ -36,7 +36,6 @@ public class AutoRed extends LinearOpMode {
     private final double CLOSED_RIGHT_SERVO = 0.6;
     private final double OPEN_LEFT_SERVO = 0.6;
     private final double OPEN_RIGHT_SERVO = 0.0;
-    private final double WOBBLE_GOAL_DIST = 7.0;
 
     //Flywheel
     private final double FLYWHEEL_POWER = 0.8;//This value may need additional logic if we need to vary the power.
@@ -136,8 +135,7 @@ public class AutoRed extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        // Step through each leg of the path,
-        setWobbleClawPosition(CLOSED_SERVO_POSITION);
+        /** Autonomous section */
         //Drive to see rings - Encoder Drive
         encoderDriveY(DRIVE_SPEED, 30, 5);
         //Detect Ring Stack - Detect Rings
@@ -163,8 +161,8 @@ public class AutoRed extends LinearOpMode {
                  encoderDriveX(DRIVE_SPEED, 55, 5);
                  encoderDriveY(DRIVE_SPEED, 5, 1);
                  //Drop wobble goal
-                 setWobbleClawPosition(OPEN_SERVO_POSITION);
-                 //Park on line
+                dropWobbleGoal();
+                //Park on line
                  encoderDriveY(DRIVE_SPEED, -3, 1);
                  break;
              case 1: //1 Ring
@@ -172,7 +170,7 @@ public class AutoRed extends LinearOpMode {
                  encoderDriveX(DRIVE_SPEED, 26, 3);
                  encoderDriveY(DRIVE_SPEED, 25, 3);
                  //Drop wobble goal
-                 setWobbleClawPosition(OPEN_SERVO_POSITION);
+                 dropWobbleGoal();
                  //Grab last ring for shooting
                  encoderDriveY(DRIVE_SPEED, -25, 3);
                  encoderDriveX(DRIVE_SPEED, -6, 1);
@@ -189,7 +187,7 @@ public class AutoRed extends LinearOpMode {
                  encoderDriveX(DRIVE_SPEED, 55, 5);
                  encoderDriveY(DRIVE_SPEED, 48, 5);
                  //Drop wobble goal
-                 setWobbleClawPosition(OPEN_SERVO_POSITION);
+                 dropWobbleGoal();
                  //Grab last ring for shooting
                  encoderDriveY(DRIVE_SPEED, -48, 3);
                  encoderDriveX(DRIVE_SPEED, -28, 1);
@@ -396,9 +394,16 @@ public class AutoRed extends LinearOpMode {
             //Launch rings for specific amount of time, according to amount to shoot
         }
 
-        public void setWobbleClawPosition(double servoPosition){
-            latchServo.setPosition(servoPosition);
-        }
+        public void dropWobbleGoal(){
+            wobbleLifter.setPower(-LIFT_POWER);
+            sleep(1000);
+            leftServo.setPosition(OPEN_LEFT_SERVO);
+            rightServo.setPosition(OPEN_RIGHT_SERVO);
+            sleep(100);
+            wobbleLifter.setPower(LIFT_POWER);
+            sleep(1000);
+            wobbleLifter.setPower(0);
+    }
 
     /**
      * Initialize the Vuforia localization engine.
