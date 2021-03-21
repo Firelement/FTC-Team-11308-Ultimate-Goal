@@ -320,7 +320,8 @@ public class AutoRed extends LinearOpMode {
             }
         }
 
-    public void encoderDriveX(double speed, double inches, double timeoutS) {
+        /** Strafe with encoders*/
+        public void encoderDriveX(double speed, double inches, double timeoutS) {
         int newTarget;
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
@@ -357,14 +358,16 @@ public class AutoRed extends LinearOpMode {
         }
     }
 
+        /** Driving  with intake on */
         public void intakeWheelDrive(double speed, double inches, double timeoutS){
             //Intake wheel on
 
-            //Drive Forward
+            //Drive specified distance
             encoderDriveY(speed,inches,timeoutS);
             //Intake wheel off
         }
 
+        /** Detect the amount of rings*/
         public void detectRings(){
             //Webcam Detection changes rings to number of rings- defaults to 0
             if (tfod != null) {
@@ -390,10 +393,12 @@ public class AutoRed extends LinearOpMode {
             }
         }
 
+        /** Shoot rings*/
         public void shootRings(int amountToShoot){
             //Launch rings for specific amount of time, according to amount to shoot
         }
 
+        /** Drop the wobble goal*/
         public void dropWobbleGoal(){
             wobbleLifter.setPower(-LIFT_POWER);
             sleep(1000);
@@ -405,9 +410,7 @@ public class AutoRed extends LinearOpMode {
             wobbleLifter.setPower(0);
     }
 
-    /**
-     * Initialize the Vuforia localization engine.
-     */
+    /** Initialize the Vuforia localization engine */
     private void initVuforia() {
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
@@ -423,9 +426,7 @@ public class AutoRed extends LinearOpMode {
         // Loading trackables is not necessary for the TensorFlow Object Detection engine.
     }
 
-    /**
-     * Initialize the TensorFlow Object Detection engine.
-     */
+    /**Initialize the TensorFlow Object Detection engine */
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -434,6 +435,5 @@ public class AutoRed extends LinearOpMode {
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
     }
-
 
     }
