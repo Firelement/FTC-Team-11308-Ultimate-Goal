@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -19,36 +20,59 @@ import java.util.List;
 
 @Autonomous(name="Auto Red", group="Pushbot")
 public class AutoRed extends LinearOpMode {
-    /* Declare OpMode members. */
+
+    /** Variables for ring detection */
     private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Quad";
     private static final String LABEL_SECOND_ELEMENT = "Single";
     private static final String VUFORIA_KEY =
             " AaDyemX/////AAABmTAtC2ONB0wHkUhRXShDQ5YMqzoOqj1zpW+eTxr9Vmb+zLP/5S8iHdsIsvHZDQDOgEQ8Q3j+Ke6cIggKMyK/1dGYnFe3e9oa/E/VCSqAwxd5EZZzKTEHnc+JATc5WBgX9zhdEFFZuuo1Xsn8Hpo93GCQC5n5q4uRhEAt7XvqRpj7qFT48aKhv2yHCraHMdrcD9NHXtr1CNpS53Qi9k/SrRvn9PdKL4taAey2C53xqvQ1j/+xh3Eh+3ORnMwaySnccNf145o9f5yv4fquBGYJfity4VIblSqAyg3VX/S/4aj8UmPe3T04Idl64z//OpS3ZXfozz/4Gk1qA9nW6twomt6e4kLrp3nLLiM6NOQGC1/e";
-
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
-    private final double LIFT_POWER = 0.6;
-    private final double CLOSED_SERVO_POSITION = 0.28;
-    private final double OPEN_SERVO_POSITION = 0.7;
+    //Wobble Arm
+    private final double LIFT_POWER = 0.8;
+    private final double CLOSED_LEFT_SERVO = 0.0;
+    private final double CLOSED_RIGHT_SERVO = 0.6;
+    private final double OPEN_LEFT_SERVO = 0.6;
+    private final double OPEN_RIGHT_SERVO = 0.0;
+    private final double WOBBLE_GOAL_DIST = 7.0;
 
+    //Flywheel
+    private final double FLYWHEEL_POWER = 0.8;//This value may need additional logic if we need to vary the power.
+
+    //Intake
+    private final double INTAKE_POWER = 0.5;// This value has not been tested.
+
+    //Timing
+    private ElapsedTime runtime = new ElapsedTime();
+
+    //Drive
+    private static final double COUNTS_PER_INCH = 1075; //Counts on odometry wheel per inch of distance
+    private static final double DRIVE_SPEED = 0.4; //Speed of wheel
+    private static double DRIVE_ADJUSTMENT = 0; //Variable for power adjustment
+    private static final double POWER_ADJUSTMENT_CONSTANT = 10000.0;    //Variable that dictates how much power adjustment will be added based on encoder difference in odometry
+    private static int rings = -1;    //Ring count variable
+
+
+    /** Motor declarations */
     private DcMotor leftFrontDrive;
     private DcMotor rightFrontDrive;
     private DcMotor leftRearDrive;
     private DcMotor rightRearDrive;
-    private Servo latchServo;
+    private DcMotor wobbleLifter;
+    private DcMotor intake;
+    private DcMotor flyWheel;
 
-    private ElapsedTime     runtime = new ElapsedTime();
-    private static final double COUNTS_PER_INCH = 1075;
-    private static final double DRIVE_SPEED = 0.4;
-    private static final double TURN_SPEED = 0.3;
-    private static final double INTAKE_WHEEL_SPEED = 1;
-    private static int rings = -1;
+    /** Servo declarations */
+    //private Servo ringStopper;
+    //this servo is not currently part of the design
+    //private Servo intakeRelease;
+    private Servo rightServo;
+    private Servo leftServo;
 
-    private static double DRIVE_ADJUSTMENT = 0;
-    //Variable that dictates how much power adjustment will be added based on encoder difference in odometry
-    private static final double POWER_ADJUSTMENT_CONSTANT = 10000.0;
+    // Color sensor
+    NormalizedColorSensor colorSensor;
 
     @Override
     public void runOpMode() {
@@ -64,16 +88,24 @@ public class AutoRed extends LinearOpMode {
             tfod.activate();
         }
         //Initialize the Motors
-        leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
+        leftFrontDrive  = hardwareMap.get(DcMotor.class, "left_front_drive");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
-        leftRearDrive = hardwareMap.get(DcMotor.class, "left_rear_drive");
-        rightRearDrive = hardwareMap.get(DcMotor.class, "right_rear_drive");
-        //Initialize the Servos
-        latchServo = hardwareMap.get(Servo.class, "latchservo");
+        leftRearDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
+        rightRearDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
+        wobbleLifter = hardwareMap.get(DcMotor.class,"wobble_lifter");
+        intake = hardwareMap.get(DcMotor.class,"intake");
+        flyWheel = hardwareMap.get(DcMotor.class,"fly_wheel");
 
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
-        // I believe that motors on the same side of the robot need to run in the same direction
+        //Initialize Servos
+        //ringStopper = hardwareMap.get(Servo.class,"ring_stopper");
+        //intakeRelease = hardwareMap.get(Servo.class,"intake_release");
+        leftServo = hardwareMap.get(Servo.class,"leftServo");
+        rightServo = hardwareMap.get(Servo.class,"rightServo");
+
+        //Initialize Color sensor
+        colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
+
+        //Set motor directions and modes
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         leftRearDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -89,6 +121,15 @@ public class AutoRed extends LinearOpMode {
         rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        wobbleLifter.setDirection(DcMotor.Direction.FORWARD);
+        intake.setDirection(DcMotor.Direction.FORWARD);
+        flyWheel.setDirection(DcMotor.Direction.FORWARD);
+
+        //Initialize the Servo positions
+        leftServo.setPosition(CLOSED_LEFT_SERVO);
+        rightServo.setPosition(CLOSED_RIGHT_SERVO);
+        //ringStopper.setPosition(CLOSED_RING_STOPPER);
+        //intakeRelease.setPosition(INTAKE_RELEASE_LATCHED_POSITION);
 
         telemetry.addLine("Ready To Start");
         telemetry.update();
