@@ -56,6 +56,7 @@ public class DriverControl extends LinearOpMode {
     private final double OPEN_RIGHT_SERVO = 0.0;
     private final double WOBBLE_GOAL_DIST = 7.0;
     private final double FLYWHEEL_POWER = 0.6;//This value may need additional logic if we need to vary the power.
+    private final double FLYWHEEL_POWERSHOT = .55;
     private final double INTAKE_POWER1 = 0.75;// This value has not been tested.
     private final double INTAKE_POWER2 = 0.5;
     private final double RING_STOPPER_POWER = -1.0;// This value has not been tested yet either;
@@ -143,6 +144,9 @@ public class DriverControl extends LinearOpMode {
         //These variables are necessary for slow mode to work.
         boolean isInSlowMode = false;
         boolean oldYbuttonState = false;
+
+        //Fly wheel power
+        double flyWheelPower = 0.0;
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -295,6 +299,14 @@ public class DriverControl extends LinearOpMode {
                 intakeReleasePower = 0.0;
             }
 
+            //toggle fly wheel power
+            if(gamepad2.dpad_up == true){
+                flyWheelPower = FLYWHEEL_POWER;
+            }
+            else if(gamepad2.dpad_down){
+                flyWheelPower = FLYWHEEL_POWERSHOT;
+            }
+
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
             rightFrontDrive.setPower(rightFrontPower);
@@ -305,7 +317,7 @@ public class DriverControl extends LinearOpMode {
             wobbleLifter.setPower(wobbleLifterPower);
 
             //set the power of the fly wheel
-            flyWheel.setPower(FLYWHEEL_POWER);
+            flyWheel.setPower(flyWheelPower);
 
             //set the power of the intake
             intake1.setPower(intakePower1);
