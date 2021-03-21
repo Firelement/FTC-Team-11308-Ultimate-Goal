@@ -82,7 +82,7 @@ public class AutoRed extends LinearOpMode {
         if (tfod != null) {
             tfod.activate();
         }
-        
+
         //Initialize the Motors
         leftFrontDrive  = hardwareMap.get(DcMotor.class, "left_front_drive");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
@@ -228,6 +228,7 @@ public class AutoRed extends LinearOpMode {
               telemetry.update();
 
     }
+        /** Drive forward and backwards with encoders */
         public void encoderDriveY(double speed, double inches, double timeoutS) {
         int newTarget;
         double leftSpeed;
