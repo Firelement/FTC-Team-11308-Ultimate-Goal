@@ -76,16 +76,13 @@ public class AutoRed extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        // Activate TensorFlow Object Detection before we wait for the start command
         initVuforia();
         initTfod();
-
-        /**
-         * Activate TensorFlow Object Detection before we wait for the start command.
-         * Do it here so that the Camera Stream window will have the TensorFlow annotations visible.
-         **/
         if (tfod != null) {
             tfod.activate();
         }
+        
         //Initialize the Motors
         leftFrontDrive  = hardwareMap.get(DcMotor.class, "left_front_drive");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
@@ -135,7 +132,7 @@ public class AutoRed extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        /** Autonomous section */
+        /* Autonomous section */
         //Drive to see rings - Encoder Drive
         encoderDriveY(DRIVE_SPEED, 30, 5);
         //Detect Ring Stack - Detect Rings
