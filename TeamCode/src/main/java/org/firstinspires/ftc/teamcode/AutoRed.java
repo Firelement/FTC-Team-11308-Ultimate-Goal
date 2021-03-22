@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -28,7 +29,9 @@ public class AutoRed extends LinearOpMode {
     private static final String VUFORIA_KEY =
             " AaDyemX/////AAABmTAtC2ONB0wHkUhRXShDQ5YMqzoOqj1zpW+eTxr9Vmb+zLP/5S8iHdsIsvHZDQDOgEQ8Q3j+Ke6cIggKMyK/1dGYnFe3e9oa/E/VCSqAwxd5EZZzKTEHnc+JATc5WBgX9zhdEFFZuuo1Xsn8Hpo93GCQC5n5q4uRhEAt7XvqRpj7qFT48aKhv2yHCraHMdrcD9NHXtr1CNpS53Qi9k/SrRvn9PdKL4taAey2C53xqvQ1j/+xh3Eh+3ORnMwaySnccNf145o9f5yv4fquBGYJfity4VIblSqAyg3VX/S/4aj8UmPe3T04Idl64z//OpS3ZXfozz/4Gk1qA9nW6twomt6e4kLrp3nLLiM6NOQGC1/e";
     private VuforiaLocalizer vuforia;
-    private TFObjectDetector tfod;
+    private TFObjectDetector tfod;.
+
+
 
     //Wobble Arm
     private final double LIFT_POWER = 0.8;
@@ -38,10 +41,15 @@ public class AutoRed extends LinearOpMode {
     private final double OPEN_RIGHT_SERVO = 0.0;
 
     //Flywheel
-    private final double FLYWHEEL_POWER = 0.8;//This value may need additional logic if we need to vary the power.
+    private final double FLYWHEEL_POWER = 0.52;//This value may need additional logic if we need to vary the power.
+    private final double FLYWHEEL_POWERSHOT = 0.42;
 
     //Intake
-    private final double INTAKE_POWER = 0.5;// This value has not been tested.
+    private final double INTAKE_POWER1 = 0.75;// This value has not been tested.
+    private final double INTAKE_POWER2 = 0.5;
+    private final double RING_STOPPER_POWER = -1.0;// This value has not been tested yet either;
+    private final double INTAKE_RELEASE_POWER = 1.0;
+
 
     //Timing
     private ElapsedTime runtime = new ElapsedTime();
@@ -60,13 +68,16 @@ public class AutoRed extends LinearOpMode {
     private DcMotor leftRearDrive;
     private DcMotor rightRearDrive;
     private DcMotor wobbleLifter;
-    private DcMotor intake;
+    private DcMotor intake1;
+    private DcMotor intake2;
     private DcMotor flyWheel;
 
     /** Servo declarations */
     //private Servo ringStopper;
     //this servo is not currently part of the design
     //private Servo intakeRelease;
+    private CRServo ringStopper;
+    private CRServo intakeRelease;
     private Servo rightServo;
     private Servo leftServo;
 
@@ -89,12 +100,15 @@ public class AutoRed extends LinearOpMode {
         leftRearDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
         rightRearDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
         wobbleLifter = hardwareMap.get(DcMotor.class,"wobble_lifter");
-        intake = hardwareMap.get(DcMotor.class,"intake");
+        intake1 = hardwareMap.get(DcMotor.class,"intake1");
+        intake2 = hardwareMap.get(DcMotor.class,"intake2");
         flyWheel = hardwareMap.get(DcMotor.class,"fly_wheel");
 
         //Initialize Servos
         //ringStopper = hardwareMap.get(Servo.class,"ring_stopper");
         //intakeRelease = hardwareMap.get(Servo.class,"intake_release");
+        ringStopper = hardwareMap.get(CRServo.class,"ring_stopper");
+        intakeRelease = hardwareMap.get(CRServo.class,"intake_release");
         leftServo = hardwareMap.get(Servo.class,"leftServo");
         rightServo = hardwareMap.get(Servo.class,"rightServo");
 
@@ -118,21 +132,26 @@ public class AutoRed extends LinearOpMode {
         leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         wobbleLifter.setDirection(DcMotor.Direction.FORWARD);
-        intake.setDirection(DcMotor.Direction.FORWARD);
-        flyWheel.setDirection(DcMotor.Direction.FORWARD);
+        intake1.setDirection(DcMotor.Direction.REVERSE);
+        intake2.setDirection(DcMotor.Direction.FORWARD);
+        flyWheel.setDirection(DcMotor.Direction.REVERSE);
+        flyWheel.setPower(0.0);
 
         //Initialize the Servo positions
         leftServo.setPosition(CLOSED_LEFT_SERVO);
         rightServo.setPosition(CLOSED_RIGHT_SERVO);
-        //ringStopper.setPosition(CLOSED_RING_STOPPER);
-        //intakeRelease.setPosition(INTAKE_RELEASE_LATCHED_POSITION);
 
         telemetry.addLine("Ready To Start");
         telemetry.update();
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
+        flyWheel.setPower(FLYWHEEL_POWERSHOT);
+        sleep(3000);
+        shootRings(3);
+
 
         /* Autonomous section */
+      /*
         //Drive to see rings - Encoder Drive
         encoderDriveY(DRIVE_SPEED, 30, 5);
         //Detect Ring Stack - Detect Rings
@@ -394,6 +413,31 @@ public class AutoRed extends LinearOpMode {
         /** Shoot rings*/
         public void shootRings(int amountToShoot){
             //Launch rings for specific amount of time, according to amount to shoot
+            //Raise fire blocker
+            ringStopper.setPower(RING_STOPPER_POWER);
+            sleep(500);
+            ringStopper.setPower(0);
+            if(amountToShoot == 1){
+                flyWheel.setPower(FLYWHEEL_POWERSHOT);
+            }else {
+                flyWheel.setPower(FLYWHEEL_POWER);
+            }
+            sleep(500);
+            intake1.setPower(INTAKE_POWER1);
+            intake2.setPower(INTAKE_POWER2);
+            for(int i = amountToShoot; i >0; i--){
+                if(i!= 1) {// if not last ring
+                    //Shoot ring by continuing to run intake
+                    sleep(1000);
+                }else{// if last ring
+                    //Rotate fire blocker to launch last ring and stop at loading position
+                    ringStopper.setPower(RING_STOPPER_POWER);
+                    sleep(1900);
+                }
+            }
+            intake1.setPower(0);
+            intake2.setPower(0);
+            ringStopper.setPower(0);
         }
 
         /** Drop the wobble goal*/
