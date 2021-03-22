@@ -34,7 +34,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -56,7 +55,7 @@ public class DriverControl extends LinearOpMode {
     private final double OPEN_RIGHT_SERVO = 0.0;
     private final double WOBBLE_GOAL_DIST = 7.0;
     private final double FLYWHEEL_POWER = 0.6;//This value may need additional logic if we need to vary the power.
-    private final double FLYWHEEL_POWERSHOT = .5;
+    private final double FLYWHEEL_POWERSHOT = 0.5;
     private final double INTAKE_POWER1 = 0.75;// This value has not been tested.
     private final double INTAKE_POWER2 = 0.5;
     private final double RING_STOPPER_POWER = -1.0;// This value has not been tested yet either;
