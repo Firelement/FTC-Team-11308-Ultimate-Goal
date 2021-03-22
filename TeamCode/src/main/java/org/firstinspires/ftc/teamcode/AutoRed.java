@@ -29,7 +29,7 @@ public class AutoRed extends LinearOpMode {
     private static final String VUFORIA_KEY =
             " AaDyemX/////AAABmTAtC2ONB0wHkUhRXShDQ5YMqzoOqj1zpW+eTxr9Vmb+zLP/5S8iHdsIsvHZDQDOgEQ8Q3j+Ke6cIggKMyK/1dGYnFe3e9oa/E/VCSqAwxd5EZZzKTEHnc+JATc5WBgX9zhdEFFZuuo1Xsn8Hpo93GCQC5n5q4uRhEAt7XvqRpj7qFT48aKhv2yHCraHMdrcD9NHXtr1CNpS53Qi9k/SrRvn9PdKL4taAey2C53xqvQ1j/+xh3Eh+3ORnMwaySnccNf145o9f5yv4fquBGYJfity4VIblSqAyg3VX/S/4aj8UmPe3T04Idl64z//OpS3ZXfozz/4Gk1qA9nW6twomt6e4kLrp3nLLiM6NOQGC1/e";
     private VuforiaLocalizer vuforia;
-    private TFObjectDetector tfod;.
+    private TFObjectDetector tfod;
 
 
 
@@ -146,12 +146,10 @@ public class AutoRed extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         flyWheel.setPower(FLYWHEEL_POWERSHOT);
-        sleep(3000);
-        shootRings(3);
 
 
         /* Autonomous section */
-      /*
+
         //Drive to see rings - Encoder Drive
         encoderDriveY(DRIVE_SPEED, 30, 5);
         //Detect Ring Stack - Detect Rings
@@ -171,57 +169,54 @@ public class AutoRed extends LinearOpMode {
         //Shoot final ring
         shootRings(1);
         //Determine where to place wobble goal and next autonomous steps
-         switch(rings){
-             case 0: //0 Rings
-                 //Drive to wobble goal deposit area
-                 encoderDriveX(DRIVE_SPEED, 55, 5);
-                 encoderDriveY(DRIVE_SPEED, 5, 1);
-                 //Drop wobble goal
+        if(rings == 0) {//0 Rings
+                //Drive to wobble goal deposit area
+                encoderDriveX(DRIVE_SPEED, 55, 5);
+                encoderDriveY(DRIVE_SPEED, 5, 1);
+                //Drop wobble goal
                 dropWobbleGoal();
                 //Park on line
-                 encoderDriveY(DRIVE_SPEED, -3, 1);
-                 break;
-             case 1: //1 Ring
-                 //Drive to wobble goal deposit area
-                 encoderDriveX(DRIVE_SPEED, 26, 3);
-                 encoderDriveY(DRIVE_SPEED, 25, 3);
-                 //Drop wobble goal
-                 dropWobbleGoal();
-                 //Grab last ring for shooting
-                 encoderDriveY(DRIVE_SPEED, -25, 3);
-                 encoderDriveX(DRIVE_SPEED, -6, 1);
-                 intakeWheelDrive(DRIVE_SPEED, -35, 6);
-                 //Drive to goal shooting location
-                 encoderDriveY(DRIVE_SPEED, 35, 6);
-                 //Shoot ring
-                 shootRings(1);
-                 //Park on line
-                 encoderDriveY(DRIVE_SPEED, 5, 1);
-                 break;
-             case 4: //4 Rings
-                  //Drive to wobble goal deposit area
-                 encoderDriveX(DRIVE_SPEED, 55, 5);
-                 encoderDriveY(DRIVE_SPEED, 48, 5);
-                 //Drop wobble goal
-                 dropWobbleGoal();
-                 //Grab last ring for shooting
-                 encoderDriveY(DRIVE_SPEED, -48, 3);
-                 encoderDriveX(DRIVE_SPEED, -28, 1);
-                 intakeWheelDrive(DRIVE_SPEED, -35, 6);
-                 //Drive to goal shooting location
-                 encoderDriveY(DRIVE_SPEED, 35, 6);
-                 //Shoot rings
-                 shootRings(3);
-                 //intake last ring
-                 intakeWheelDrive(DRIVE_SPEED, -35, 6);
-                 //Drive to goal shooting location
-                 encoderDriveY(DRIVE_SPEED, 35, 6);
-                 //Shoot last ring
-                 shootRings(1);
-                 //Park on line
-                 encoderDriveY(DRIVE_SPEED, 5, 1);
-                 break;
-         }
+                encoderDriveY(DRIVE_SPEED, -3, 1);
+        }else if(rings == 1) {//1 Ring
+            //Drive to wobble goal deposit area
+            encoderDriveX(DRIVE_SPEED, 26, 3);
+            encoderDriveY(DRIVE_SPEED, 25, 3);
+            //Drop wobble goal
+            dropWobbleGoal();
+            //Grab last ring for shooting
+            encoderDriveY(DRIVE_SPEED, -25, 3);
+            encoderDriveX(DRIVE_SPEED, -6, 1);
+            intakeWheelDrive(DRIVE_SPEED, -35, 6);
+            //Drive to goal shooting location
+            encoderDriveY(DRIVE_SPEED, 35, 6);
+            //Shoot ring
+            shootRings(1);
+            //Park on line
+            encoderDriveY(DRIVE_SPEED, 5, 1);
+        }else { //4 Rings
+            //Drive to wobble goal deposit area
+            encoderDriveX(DRIVE_SPEED, 55, 5);
+            encoderDriveY(DRIVE_SPEED, 48, 5);
+            //Drop wobble goal
+            dropWobbleGoal();
+            //Grab last ring for shooting
+            encoderDriveY(DRIVE_SPEED, -48, 3);
+            encoderDriveX(DRIVE_SPEED, -28, 1);
+            intakeWheelDrive(DRIVE_SPEED, -35, 6);
+            //Drive to goal shooting location
+            encoderDriveY(DRIVE_SPEED, 35, 6);
+            //Shoot rings
+            shootRings(3);
+            //intake last ring
+            intakeWheelDrive(DRIVE_SPEED, -35, 6);
+            //Drive to goal shooting location
+            encoderDriveY(DRIVE_SPEED, 35, 6);
+            //Shoot last ring
+            shootRings(1);
+            //Park on line
+            encoderDriveY(DRIVE_SPEED, 5, 1);
+        }
+
 
         /*If: 4 rings
         Deposit wobble goal far - Open Wobble Claw
@@ -357,7 +352,7 @@ public class AutoRed extends LinearOpMode {
                     rightRearDrive.setPower(speed);
                 }
             } else { //If current position is smaller than new target, robot goes left
-                while (leftFrontDrive.getCurrentPosition() <= newTarget && (runtime.seconds() < timeoutS) && opModeIsActive()) {
+                while (rightRearDrive.getCurrentPosition() <= newTarget && (runtime.seconds() < timeoutS) && opModeIsActive()) {
                     leftFrontDrive.setPower(-speed);
                     rightFrontDrive.setPower(speed);
                     leftRearDrive.setPower(speed);
@@ -387,6 +382,7 @@ public class AutoRed extends LinearOpMode {
         /** Detect the amount of rings*/
         public void detectRings(){
             //Webcam Detection changes rings to number of rings- defaults to 0
+           sleep(500);
             if (tfod != null) {
                 // getUpdatedRecognitions() will return null if no new information is available since
                 // the last time that call was made.
