@@ -40,7 +40,8 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 
-@TeleOp(name="Mechanum Wheel Drive", group="Linear Opmode")
+@Disabled
+@TeleOp(name="Mechanum Wheel Driver Control", group="Linear Opmode")
 public class Mechanum_Wheel_Drive extends LinearOpMode {
 
     // Declare Motor Classes

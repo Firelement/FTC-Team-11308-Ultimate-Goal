@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -53,15 +54,15 @@ public class DriverControl extends LinearOpMode {
     private final double OPEN_LEFT_SERVO = 0.6;
     private final double OPEN_RIGHT_SERVO = 0.0;
     private final double WOBBLE_GOAL_DIST = 7.0;
-    private final double FLYWHEEL_POWER = 0.8;//This value may need additional logic if we need to vary the power.
-    private final double INTAKE_POWER = 0.5;// This value has not been tested.
-    private final double CLOSED_RING_STOPPER = 0.5;// This value has not been tested yet.
-    private final double OPEN_RING_STOPPER = 0.0;// This value has not been tested yet either;
+    private final double FLYWHEEL_POWER = 0.6;//This value may need additional logic if we need to vary the power.
+    private final double FLYWHEEL_POWERSHOT = 0.5;
+    private final double INTAKE_POWER1 = 0.75;// This value has not been tested.
+    private final double INTAKE_POWER2 = 0.5;
+    private final double RING_STOPPER_POWER = -1.0;// This value has not been tested yet either;
     private final double SLOW_MODE_CONSTANT = 0.4;//This value is used to scale down the motor power
 
     //We may need a servo to release the intake.
-    //private final double INTAKE_RELEASE_LATCHED_POSITION = 0.3;
-    //private final double INTAKE_RELEASE_OPEN_POSITION = 0.7;
+    private final double INTAKE_RELEASE_POWER = 1.0;
 
     // Declare Motor Classes
     private ElapsedTime runtime = new ElapsedTime();
@@ -70,13 +71,13 @@ public class DriverControl extends LinearOpMode {
     private DcMotor leftRearDrive;
     private DcMotor rightRearDrive;
     private DcMotor wobbleLifter;
-    private DcMotor intake;
+    private DcMotor intake1;
+    private DcMotor intake2;
     private DcMotor flyWheel;
 
     //Declare Servo Classes
-    //private Servo ringStopper;
-    //this servo is not currently part of the design
-    //private Servo intakeRelease;
+    private CRServo ringStopper;
+    private CRServo intakeRelease;
     private Servo rightServo;
     private Servo leftServo;
 
@@ -97,12 +98,13 @@ public class DriverControl extends LinearOpMode {
         leftRearDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
         rightRearDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
         wobbleLifter = hardwareMap.get(DcMotor.class,"wobble_lifter");
-        intake = hardwareMap.get(DcMotor.class,"intake");
+        intake1 = hardwareMap.get(DcMotor.class,"intake1");
+        intake2 = hardwareMap.get(DcMotor.class,"intake2");
         flyWheel = hardwareMap.get(DcMotor.class,"fly_wheel");
 
         //Initialize Servos
-        //ringStopper = hardwareMap.get(Servo.class,"ring_stopper");
-        //intakeRelease = hardwareMap.get(Servo.class,"intake_release");
+        ringStopper = hardwareMap.get(CRServo.class,"ring_stopper");
+        intakeRelease = hardwareMap.get(CRServo.class,"intake_release");
         leftServo = hardwareMap.get(Servo.class,"leftServo");
         rightServo = hardwareMap.get(Servo.class,"rightServo");
 
@@ -116,14 +118,16 @@ public class DriverControl extends LinearOpMode {
         rightRearDrive.setDirection(DcMotor.Direction.FORWARD);
 
         wobbleLifter.setDirection(DcMotor.Direction.FORWARD);
-        intake.setDirection(DcMotor.Direction.FORWARD);
-        flyWheel.setDirection(DcMotor.Direction.FORWARD);
+        intake1.setDirection(DcMotor.Direction.REVERSE);
+        intake2.setDirection(DcMotor.Direction.FORWARD);
+        flyWheel.setDirection(DcMotor.Direction.REVERSE);
+        flyWheel.setPower(0.0);
 
         //Initialize the Servo positions
         leftServo.setPosition(CLOSED_LEFT_SERVO);
         rightServo.setPosition(CLOSED_RIGHT_SERVO);
-        //ringStopper.setPosition(CLOSED_RING_STOPPER);
-        //intakeRelease.setPosition(INTAKE_RELEASE_LATCHED_POSITION);
+        ringStopper.setPower(RING_STOPPER_POWER);
+        intakeRelease.setPower(INTAKE_RELEASE_POWER);
 
         //This Boolean is part of the odd logic that Andrew wants for the wobble goal lifter.
         // Mode 1 is where the hand toggles between open and closed when <> or <> buttons are pressed
@@ -134,10 +138,14 @@ public class DriverControl extends LinearOpMode {
         // so that the hand will hold its position after the button is released.
         double leftServoPos = CLOSED_LEFT_SERVO;
         double rightServoPos = CLOSED_RIGHT_SERVO;
+        double intakeReleasePower = INTAKE_RELEASE_POWER;
 
         //These variables are necessary for slow mode to work.
         boolean isInSlowMode = false;
         boolean oldYbuttonState = false;
+
+        //Fly wheel power
+        double flyWheelPower = 0.0;
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -154,8 +162,8 @@ public class DriverControl extends LinearOpMode {
 
             //Setup a variable for the wobbleLifter and flywheel
             double wobbleLifterPower;
-            double flywheelPower;
-            double intakePower;
+            double intakePower1;
+            double intakePower2;
 
             // Setup variables to hold the Game pad inputs
             double drive;
@@ -172,9 +180,9 @@ public class DriverControl extends LinearOpMode {
             // These can be changed to what ever the driver wants it to be
             //some of these may need to be made negative depending  on the which direction
             //is positive on the gamepad
-            drive = gamepad1.right_stick_y;
-            rotate = -gamepad1.left_stick_x;
-            strafe = -gamepad1.right_stick_x;
+            drive = gamepad1.left_stick_y;
+            rotate = -gamepad1.right_stick_x;
+            strafe = -gamepad1.left_stick_x;
 
             // Assign the power variables to the Game pad inputs
             leftFrontPower = drive + rotate + strafe;
@@ -211,13 +219,20 @@ public class DriverControl extends LinearOpMode {
             // we have to set it above the code for the fly wheel(line 238-251) as that code may
             //need to override this intake value to load the rings into the launcher.
             if(gamepad1.right_bumper == true){
-                intakePower = INTAKE_POWER;
+                intakePower1 = INTAKE_POWER1;
+                intakePower2 = INTAKE_POWER2;
             }
             else if (gamepad1.left_bumper == true){
-                intakePower = -INTAKE_POWER;
+                intakePower1 = -INTAKE_POWER1;
+                intakePower2 = -INTAKE_POWER2;
+            }
+            else if (gamepad2.y  == true){
+                intakePower1 = INTAKE_POWER1;
+                intakePower2 = INTAKE_POWER2;
             }
             else{
-                intakePower = 0.0;
+                intakePower1 = 0.0;
+                intakePower2 = 0.0;
             }
 
             // make sure that the power variables are within -1.0 and 1.0
@@ -255,7 +270,7 @@ public class DriverControl extends LinearOpMode {
                 isInMode2 = true;
             }
             //Allow the user to reset to Mode 1 when the X button is pressed
-            if(gamepad1.x == true){
+            if(gamepad2.x == true){
                 isInMode2 = false;
             }
 
@@ -266,30 +281,30 @@ public class DriverControl extends LinearOpMode {
             //This section controls launching the ring
             // Release the ring
             if (gamepad2.right_trigger > 0.2) {
-                //keep the fly wheel spinning
-                flywheelPower = FLYWHEEL_POWER;
-                //ringStopperPosition = OPEN_RING_STOPPER;
-                //intakePower = INTAKE_POWER;
+                ringStopper.setPower(RING_STOPPER_POWER);
             }
-            //Spin up the flywheel
-            else if(gamepad2.left_trigger > 0.2) {
-                flywheelPower = FLYWHEEL_POWER;
+            else if (gamepad2.left_trigger > 0.2){
+                ringStopper.setPower(-RING_STOPPER_POWER);
             }
-            //Stop the flywheel
             else {
-                flywheelPower = 0;
-                //ringStopperPosition = CLOSED_RING_STOPPER;
+                ringStopper.setPower(0.0);
             }
 
             //this section will be commented out until we have an intake release servo
-            /*
-            if(gamepad1.y == true){
-                intakeReleasePosition = INTAKE_RELEASE_OPEN_POSITION;
+            if(gamepad1.a == true){
+                intakeReleasePower = INTAKE_RELEASE_POWER;
             }
             else{
-                intakeReleasePosition = INTAKE_RELEASE_LATCHED_POSITION;
+                intakeReleasePower = 0.0;
             }
-            */
+
+            //toggle fly wheel power
+            if(gamepad2.dpad_up == true){
+                flyWheelPower = FLYWHEEL_POWER;
+            }
+            else if(gamepad2.dpad_down){
+                flyWheelPower = FLYWHEEL_POWERSHOT;
+            }
 
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
@@ -301,16 +316,16 @@ public class DriverControl extends LinearOpMode {
             wobbleLifter.setPower(wobbleLifterPower);
 
             //set the power of the fly wheel
-            flyWheel.setPower(flywheelPower);
+            flyWheel.setPower(flyWheelPower);
 
             //set the power of the intake
-            intake.setPower(intakePower);
+            intake1.setPower(intakePower1);
+            intake2.setPower(intakePower2);
 
             //Set the position of the servos
             leftServo.setPosition(leftServoPos);
             rightServo.setPosition(rightServoPos);
-            //ringStopper.setPosition(ringStopperPosition);
-            //intakeRelease.setPosition(intakeReleasePosition);
+            intakeRelease.setPower(intakeReleasePower);
 
             // Show the elapsed game time, wheel power and color sensor distance.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
