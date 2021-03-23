@@ -148,7 +148,7 @@ public class AutoRed extends LinearOpMode {
         leftServo.setPosition(CLOSED_LEFT_SERVO);
         rightServo.setPosition(CLOSED_RIGHT_SERVO);
 
-        telemetry.addLine("Ready To Start");
+        telemetry.addLine("Ready To Start Autonomous");
         telemetry.update();
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -172,10 +172,7 @@ public class AutoRed extends LinearOpMode {
             ringStopper.setPower(RING_STOPPER_POWER);
             sleep(500);
             ringStopper.setPower(0);
-
-            shootPowerShot(3, 16, STRAFE_SPEED);
-
-       /* //Shoot ring 1
+            //Shoot ring 1
         shootRings(1);
         //Line up next shot
         encoderDriveX(STRAFE_SPEED, 8, 2);
@@ -185,7 +182,7 @@ public class AutoRed extends LinearOpMode {
         encoderDriveX(STRAFE_SPEED, 8, 2);
         //Shoot final ring
         shootRings(1);
-*/
+
             //Determine where to place wobble goal and next autonomous steps
 
             if (rings == 0) {//0 Rings
@@ -290,8 +287,8 @@ public class AutoRed extends LinearOpMode {
 
                         //Dynamically scale speed based on difference between encoders
                         DRIVE_ADJUSTMENT = (leftFrontDrive.getCurrentPosition() + rightFrontDrive.getCurrentPosition())/POWER_ADJUSTMENT_CONSTANT;
-                        leftSpeed = speed - DRIVE_ADJUSTMENT;
-                        rightSpeed = speed + DRIVE_ADJUSTMENT;
+                        leftSpeed = speed + DRIVE_ADJUSTMENT;
+                        rightSpeed = speed - DRIVE_ADJUSTMENT;
 
                         leftSpeed = Range.clip(leftSpeed, -1.0,1.0);
                         rightSpeed = Range.clip(rightSpeed, -1.0,1.0);
