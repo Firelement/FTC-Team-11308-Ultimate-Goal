@@ -110,7 +110,7 @@ public class AutoRed extends LinearOpMode {
 
         //Initialize Servos
         //ringStopper = hardwareMap.get(Servo.class,"ring_stopper");
-        //intakeRelease = hardwareMap.get(Servo.class,"intake_release");
+        intakeRelease = hardwareMap.get(CRServo.class,"intake_release");
         ringStopper = hardwareMap.get(CRServo.class,"ring_stopper");
         intakeRelease = hardwareMap.get(CRServo.class,"intake_release");
         leftServo = hardwareMap.get(Servo.class,"leftServo");
@@ -159,7 +159,10 @@ public class AutoRed extends LinearOpMode {
         detectRings();
         //Drive to power shot shooting location
         encoderDriveX(STRAFE_SPEED, -38, 5);
+        //Release intake servo during movement
+        intakeRelease.setPower(INTAKE_RELEASE_POWER);
         encoderDriveY(DRIVE_SPEED, 31, 5);
+        intakeRelease.setPower(0);
         //Power Shots  - Shoot 1 ring 3 times
         //Raise fire blocker
         ringStopper.setPower(RING_STOPPER_POWER);
@@ -195,6 +198,7 @@ public class AutoRed extends LinearOpMode {
             encoderDriveY(DRIVE_SPEED, -25, 3);
             encoderDriveX(STRAFE_SPEED, -6, 1);
             intakeWheelDrive(DRIVE_SPEED, -35, 6);
+            heldRings = 1;
             //Drive to goal shooting location
             encoderDriveY(DRIVE_SPEED, 35, 6);
             //Shoot ring
@@ -211,12 +215,14 @@ public class AutoRed extends LinearOpMode {
             encoderDriveY(DRIVE_SPEED, -48, 3);
             encoderDriveX(STRAFE_SPEED, -28, 1);
             intakeWheelDrive(DRIVE_SPEED, -35, 6);
+            heldRings = 3;
             //Drive to goal shooting location
             encoderDriveY(DRIVE_SPEED, 35, 6);
             //Shoot rings
             shootRings(3);
             //intake last ring
             intakeWheelDrive(DRIVE_SPEED, -35, 6);
+            heldRings = 1;
             //Drive to goal shooting location
             encoderDriveY(DRIVE_SPEED, 35, 6);
             //Shoot last ring
@@ -380,11 +386,15 @@ public class AutoRed extends LinearOpMode {
 
         /** Driving  with intake on */
         public void intakeWheelDrive(double speed, double inches, double timeoutS){
-            //Intake wheel on
-
+            //Intake wheels on
+            intake1.setPower(INTAKE_POWER1);
+            intake2.setPower(INTAKE_POWER2);
             //Drive specified distance
             encoderDriveY(speed,inches,timeoutS);
-            //Intake wheel off
+            sleep(250);
+            //Intake wheels off
+            intake1.setPower(0);
+            intake2.setPower(0);
         }
 
         /** Detect the amount of rings*/
@@ -428,7 +438,7 @@ public class AutoRed extends LinearOpMode {
             for(int i = amountToShoot; i >0; i--){
                 if(heldRings>1) {// if not last ring
                     //Shoot ring by continuing to run intake
-                    sleep(1000);
+                    sleep(800);
                     heldRings--;
                 }else{// if last ring
                     //Rotate fire blocker to launch last ring
