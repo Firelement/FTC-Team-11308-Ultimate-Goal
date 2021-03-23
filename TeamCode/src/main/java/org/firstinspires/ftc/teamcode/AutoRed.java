@@ -41,8 +41,8 @@ public class AutoRed extends LinearOpMode {
     private final double OPEN_RIGHT_SERVO = 0.0;
 
     //Flywheel
-    private final double FLYWHEEL_POWER = 0.52;//This value may need additional logic if we need to vary the power.
-    private final double FLYWHEEL_POWERSHOT = 0.42;
+    private final double FLYWHEEL_POWER = 0.6;//This value may need additional logic if we need to vary the power.
+    private final double FLYWHEEL_POWERSHOT = 0.5;
 
     //Intake
     private final double INTAKE_POWER1 = 0.75;// This value has not been tested.
@@ -55,12 +55,16 @@ public class AutoRed extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
 
     //Drive
-    private static final double COUNTS_PER_INCH = 1075; //Counts on odometry wheel per inch of distance
-    private static final double DRIVE_SPEED = 0.4; //Speed of wheel
+    private static final double COUNTS_PER_INCH = 1400; //Counts on odometry wheel per inch of distance
+    private static final double DRIVE_SPEED = 0.5; //Speed of wheel
+    private static final double STRAFE_SPEED = 0.3;
+
     private static double DRIVE_ADJUSTMENT = 0; //Variable for power adjustment
     private static final double POWER_ADJUSTMENT_CONSTANT = 10000.0;    //Variable that dictates how much power adjustment will be added based on encoder difference in odometry
-    private static int rings = -1;    //Ring count variable
 
+    //Other variables
+    private static int rings = 0;    //Ring count variable for pathing
+    private static int heldRings = 3; // Amount of held rings in robot
 
     /** Motor declarations */
     private DcMotor leftFrontDrive;
@@ -147,7 +151,6 @@ public class AutoRed extends LinearOpMode {
         waitForStart();
         flyWheel.setPower(FLYWHEEL_POWERSHOT);
 
-
         /* Autonomous section */
 
         //Drive to see rings - Encoder Drive
@@ -155,37 +158,42 @@ public class AutoRed extends LinearOpMode {
         //Detect Ring Stack - Detect Rings
         detectRings();
         //Drive to power shot shooting location
-        encoderDriveX(DRIVE_SPEED, -13, 5);
+        encoderDriveX(STRAFE_SPEED, -38, 5);
         encoderDriveY(DRIVE_SPEED, 31, 5);
         //Power Shots  - Shoot 1 ring 3 times
+        //Raise fire blocker
+        ringStopper.setPower(RING_STOPPER_POWER);
+        sleep(500);
+        ringStopper.setPower(0);
         //Shoot ring 1
         shootRings(1);
         //Line up next shot
-        encoderDriveX(DRIVE_SPEED, 7.5, 2);
+        encoderDriveX(STRAFE_SPEED, 7.5, 2);
         //Shoot ring 2
         shootRings(1);
         //Line up next shot
-        encoderDriveX(DRIVE_SPEED, 7.5, 2);
+        encoderDriveX(STRAFE_SPEED, 7.5, 2);
         //Shoot final ring
         shootRings(1);
         //Determine where to place wobble goal and next autonomous steps
+        encoderDriveX(STRAFE_SPEED,20,2);
         if(rings == 0) {//0 Rings
                 //Drive to wobble goal deposit area
-                encoderDriveX(DRIVE_SPEED, 55, 5);
-                encoderDriveY(DRIVE_SPEED, 5, 1);
+                encoderDriveX(STRAFE_SPEED, 55, 5);
+                encoderDriveY(DRIVE_SPEED, -10, 1);
                 //Drop wobble goal
                 dropWobbleGoal();
                 //Park on line
-                encoderDriveY(DRIVE_SPEED, -3, 1);
+                encoderDriveY(DRIVE_SPEED, 3, 1);
         }else if(rings == 1) {//1 Ring
             //Drive to wobble goal deposit area
-            encoderDriveX(DRIVE_SPEED, 26, 3);
+            encoderDriveX(STRAFE_SPEED, 26, 3);
             encoderDriveY(DRIVE_SPEED, 25, 3);
             //Drop wobble goal
             dropWobbleGoal();
             //Grab last ring for shooting
             encoderDriveY(DRIVE_SPEED, -25, 3);
-            encoderDriveX(DRIVE_SPEED, -6, 1);
+            encoderDriveX(STRAFE_SPEED, -6, 1);
             intakeWheelDrive(DRIVE_SPEED, -35, 6);
             //Drive to goal shooting location
             encoderDriveY(DRIVE_SPEED, 35, 6);
@@ -195,13 +203,13 @@ public class AutoRed extends LinearOpMode {
             encoderDriveY(DRIVE_SPEED, 5, 1);
         }else { //4 Rings
             //Drive to wobble goal deposit area
-            encoderDriveX(DRIVE_SPEED, 55, 5);
+            encoderDriveX(STRAFE_SPEED, 55, 5);
             encoderDriveY(DRIVE_SPEED, 48, 5);
             //Drop wobble goal
             dropWobbleGoal();
             //Grab last ring for shooting
             encoderDriveY(DRIVE_SPEED, -48, 3);
-            encoderDriveX(DRIVE_SPEED, -28, 1);
+            encoderDriveX(STRAFE_SPEED, -28, 1);
             intakeWheelDrive(DRIVE_SPEED, -35, 6);
             //Drive to goal shooting location
             encoderDriveY(DRIVE_SPEED, 35, 6);
@@ -271,11 +279,11 @@ public class AutoRed extends LinearOpMode {
                         leftSpeed = Range.clip(leftSpeed, -1.0,1.0);
                         rightSpeed = Range.clip(rightSpeed, -1.0,1.0);
                         
-                        if (-leftFrontDrive.getCurrentPosition() >= newTarget) {
+                        if (leftFrontDrive.getCurrentPosition() >= newTarget) {
                             leftFrontDrive.setPower(leftSpeed);
                             leftRearDrive.setPower(leftSpeed);
                         }
-                        if (rightFrontDrive.getCurrentPosition() >= newTarget) {
+                        if (-rightFrontDrive.getCurrentPosition() >= newTarget) {
                             rightFrontDrive.setPower(rightSpeed);
                             rightRearDrive.setPower(rightSpeed);
                         }
@@ -306,11 +314,11 @@ public class AutoRed extends LinearOpMode {
                             leftSpeed = Range.clip(leftSpeed, -1.0,1.0);
                             rightSpeed = Range.clip(rightSpeed, -1.0,1.0);
 
-                            if (-leftFrontDrive.getCurrentPosition() <= newTarget) {
+                            if (leftFrontDrive.getCurrentPosition() <= newTarget) {
                                 leftFrontDrive.setPower(-leftSpeed);
                                 leftRearDrive.setPower(-leftSpeed);
                             }
-                            if (rightFrontDrive.getCurrentPosition() <= newTarget) {
+                            if (-rightFrontDrive.getCurrentPosition() <= newTarget) {
                                 rightFrontDrive.setPower(-rightSpeed);
                                 rightRearDrive.setPower(-rightSpeed);
                             }
@@ -328,7 +336,7 @@ public class AutoRed extends LinearOpMode {
             rightFrontDrive.setPower(0);
             leftRearDrive.setPower(0);
             rightRearDrive.setPower(0);
-                //  sleep(250);   // optional pause after each move
+                  sleep(250);   // optional pause after each move
             }
         }
 
@@ -366,7 +374,7 @@ public class AutoRed extends LinearOpMode {
             leftRearDrive.setPower(0);
             rightRearDrive.setPower(0);
 
-            //  sleep(250);   // optional pause after each move
+              sleep(250);   // optional pause after each move
         }
     }
 
@@ -409,10 +417,6 @@ public class AutoRed extends LinearOpMode {
         /** Shoot rings*/
         public void shootRings(int amountToShoot){
             //Launch rings for specific amount of time, according to amount to shoot
-            //Raise fire blocker
-            ringStopper.setPower(RING_STOPPER_POWER);
-            sleep(500);
-            ringStopper.setPower(0);
             if(amountToShoot == 1){
                 flyWheel.setPower(FLYWHEEL_POWERSHOT);
             }else {
@@ -422,13 +426,15 @@ public class AutoRed extends LinearOpMode {
             intake1.setPower(INTAKE_POWER1);
             intake2.setPower(INTAKE_POWER2);
             for(int i = amountToShoot; i >0; i--){
-                if(i!= 1) {// if not last ring
+                if(heldRings>1) {// if not last ring
                     //Shoot ring by continuing to run intake
                     sleep(1000);
+                    heldRings--;
                 }else{// if last ring
-                    //Rotate fire blocker to launch last ring and stop at loading position
+                    //Rotate fire blocker to launch last ring
                     ringStopper.setPower(RING_STOPPER_POWER);
-                    sleep(1900);
+                    sleep(1500);
+                    heldRings--;
                 }
             }
             intake1.setPower(0);
@@ -438,12 +444,12 @@ public class AutoRed extends LinearOpMode {
 
         /** Drop the wobble goal*/
         public void dropWobbleGoal(){
-            wobbleLifter.setPower(-LIFT_POWER);
+            wobbleLifter.setPower(LIFT_POWER);
             sleep(1000);
             leftServo.setPosition(OPEN_LEFT_SERVO);
             rightServo.setPosition(OPEN_RIGHT_SERVO);
             sleep(100);
-            wobbleLifter.setPower(LIFT_POWER);
+            wobbleLifter.setPower(-LIFT_POWER);
             sleep(1000);
             wobbleLifter.setPower(0);
     }
