@@ -149,16 +149,17 @@ public class AutoRed extends LinearOpMode {
         telemetry.update();
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-        flyWheel.setPower(FLYWHEEL_POWERSHOT);
 
         /* Autonomous section */
 
+        //Turn on flywheel to allow spinup time
+        flyWheel.setPower(FLYWHEEL_POWERSHOT);
         //Drive to see rings - Encoder Drive
         encoderDriveY(DRIVE_SPEED, 30, 5);
         //Detect Ring Stack - Detect Rings
         detectRings();
         //Drive to power shot shooting location
-        encoderDriveX(STRAFE_SPEED, -38, 5);
+        encoderDriveX(STRAFE_SPEED, -55, 5);
         //Release intake servo during movement
         intakeRelease.setPower(INTAKE_RELEASE_POWER);
         encoderDriveY(DRIVE_SPEED, 31, 5);
@@ -179,15 +180,15 @@ public class AutoRed extends LinearOpMode {
         //Shoot final ring
         shootRings(1);
         //Determine where to place wobble goal and next autonomous steps
-        encoderDriveX(STRAFE_SPEED,20,2);
+
         if(rings == 0) {//0 Rings
-                //Drive to wobble goal deposit area
-                encoderDriveX(STRAFE_SPEED, 55, 5);
-                encoderDriveY(DRIVE_SPEED, -10, 1);
-                //Drop wobble goal
-                dropWobbleGoal();
-                //Park on line
-                encoderDriveY(DRIVE_SPEED, 3, 1);
+            //Drive to wobble goal deposit area
+            encoderDriveX(STRAFE_SPEED, 55, 5);
+            encoderDriveY(DRIVE_SPEED, -10, 1);
+            //Drop wobble goal
+            dropWobbleGoal();
+            //Park on line
+            encoderDriveY(DRIVE_SPEED, 3, 1);
         }else if(rings == 1) {//1 Ring
             //Drive to wobble goal deposit area
             encoderDriveX(STRAFE_SPEED, 26, 3);
@@ -230,6 +231,8 @@ public class AutoRed extends LinearOpMode {
             //Park on line
             encoderDriveY(DRIVE_SPEED, 5, 1);
         }
+        //Turn flywheel off
+        flyWheel.setPower(0);
 
 
         /*If: 4 rings
@@ -379,8 +382,7 @@ public class AutoRed extends LinearOpMode {
             rightFrontDrive.setPower(0);
             leftRearDrive.setPower(0);
             rightRearDrive.setPower(0);
-
-              sleep(250);   // optional pause after each move
+            sleep(250);   // optional pause after each move
         }
     }
 
@@ -391,6 +393,7 @@ public class AutoRed extends LinearOpMode {
             intake2.setPower(INTAKE_POWER2);
             //Drive specified distance
             encoderDriveY(speed,inches,timeoutS);
+            //Possible pause to allow rings to be held
             sleep(250);
             //Intake wheels off
             intake1.setPower(0);
