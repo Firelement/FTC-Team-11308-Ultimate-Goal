@@ -40,7 +40,7 @@ public class AutoRed extends LinearOpMode {
 
     //Flywheel
     private final double FLYWHEEL_POWER = 0.55;//This value may need additional logic if we need to vary the power.
-    private final double FLYWHEEL_POWERSHOT = 0.45;
+    private final double FLYWHEEL_POWERSHOT = 0.47;
 
     //Intake
     private final double INTAKE_POWER1 = 0.75;// This value has not been tested.
@@ -185,10 +185,11 @@ public class AutoRed extends LinearOpMode {
             if (rings == 0) {//0 Rings
                 //Drive to wobble goal deposit area
                 encoderDriveX(STRAFE_SPEED, 50, 5);
+                encoderDriveY(DRIVE_SPEED, 7, 1);
                 encoderRotate(STRAFE_SPEED,90,3);
                 //Drop wobble goal
                 dropWobbleGoal();
-                //Stay parked on line
+                //Parked on line
             } else if (rings == 1) {//1 Ring
                 //Drive to wobble goal deposit area
                 encoderDriveX(STRAFE_SPEED, 36, 3);
@@ -489,7 +490,7 @@ public class AutoRed extends LinearOpMode {
         /** Detect the amount of rings*/
         public void detectRings(){
             //Webcam Detection changes rings to number of rings- defaults to 0
-
+            sleep(200);
             if (tfod != null && detectionTries>=0) {
                 // getUpdatedRecognitions() will return null if no new information is available since
                 // the last time that call was made.
@@ -519,7 +520,11 @@ public class AutoRed extends LinearOpMode {
                         }
                     }
                 }else {
-
+                    rings = 0;
+                    detectionTries--;
+                    sleep(100);
+                    telemetry.update();
+                    detectRings();
                 }
             }
         }
@@ -535,9 +540,11 @@ public class AutoRed extends LinearOpMode {
             sleep(500);
             intake1.setPower(INTAKE_POWER1);
             intake2.setPower(INTAKE_POWER2);
+            ringStopper.setPower(0);
             for(int i = amountToShoot; i >0; i--){
                 if(heldRings>1) {// if not last ring
                     //Shoot ring by continuing to run intake
+                    ringStopper.setPower(0);
                     sleep(700);
                     heldRings--;
                 }else{// if last ring

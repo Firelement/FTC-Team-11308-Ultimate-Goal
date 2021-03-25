@@ -87,9 +87,6 @@ public class DriverControl extends LinearOpMode {
     // Color sensor
     NormalizedColorSensor colorSensor;
 
-    //Timer
-    Timer timer = new Timer();
-
 
     @Override
     public void runOpMode() {
@@ -132,8 +129,7 @@ public class DriverControl extends LinearOpMode {
         //Initialize the Servo positions
         leftServo.setPosition(CLOSED_LEFT_SERVO);
         rightServo.setPosition(CLOSED_RIGHT_SERVO);
-        ringStopper.setPower(RING_STOPPER_POWER);
-        intakeRelease.setPower(INTAKE_RELEASE_POWER);
+
 
         //This Boolean is part of the odd logic that Andrew wants for the wobble goal lifter.
         // Mode 1 is where the hand toggles between open and closed when <> or <> buttons are pressed
@@ -150,9 +146,11 @@ public class DriverControl extends LinearOpMode {
         boolean isInSlowMode = false;
         boolean oldYbuttonState = false;
         boolean oldBbuttonState = false;
+        boolean oldXbuttonState = false;
         boolean isFrontSwapped = false;
+        boolean isHoldingPos = false;
         double numPasses = 0;
-        double ringStopperPower = 0.2;
+        double ringStopperPower = 0.1;
 
         //Fly wheel power
         double flyWheelPower = 0.0;
@@ -311,8 +309,8 @@ public class DriverControl extends LinearOpMode {
             else if (gamepad2.left_trigger > 0.2){
                 ringStopper.setPower(-RING_STOPPER_POWER);
             }
-            else {
-                if(numPasses >= 700){
+            else if(isHoldingPos){
+                if(numPasses >= 10){
                     numPasses = 0;
                     ringStopperPower *= -1;
 
@@ -322,6 +320,14 @@ public class DriverControl extends LinearOpMode {
                 }
                 ringStopper.setPower(ringStopperPower);
             }
+            else{
+                ringStopper.setPower(0.0);
+            }
+
+            if(gamepad1.x == true && oldXbuttonState == false){
+                isHoldingPos = !isHoldingPos;
+            }
+            oldXbuttonState = gamepad1.x;
 
             //this section will be commented out until we have an intake release servo
             if(gamepad1.a == true){
