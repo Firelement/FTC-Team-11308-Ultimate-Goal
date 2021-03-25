@@ -39,8 +39,8 @@ public class AutoRed extends LinearOpMode {
     private final double OPEN_RIGHT_SERVO = 0.0;
 
     //Flywheel
-    private final double FLYWHEEL_POWER = 0.6;//This value may need additional logic if we need to vary the power.
-    private final double FLYWHEEL_POWERSHOT = 0.5;
+    private final double FLYWHEEL_POWER = 0.55;//This value may need additional logic if we need to vary the power.
+    private final double FLYWHEEL_POWERSHOT = 0.45;
 
     //Intake
     private final double INTAKE_POWER1 = 0.75;// This value has not been tested.
