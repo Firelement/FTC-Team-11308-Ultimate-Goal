@@ -31,8 +31,6 @@ public class AutoRed extends LinearOpMode {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
-
-
     //Wobble Arm
     private final double LIFT_POWER = 0.8;
     private final double CLOSED_LEFT_SERVO = 0.0;
@@ -50,12 +48,13 @@ public class AutoRed extends LinearOpMode {
     private final double RING_STOPPER_POWER = -1.0;// This value has not been tested yet either;
     private final double INTAKE_RELEASE_POWER = 1.0;
 
-
     //Timing
     private ElapsedTime runtime = new ElapsedTime();
 
     //Drive
     private static final double COUNTS_PER_INCH = 1400; //Counts on odometry wheel per inch of distance
+    private static final double COUNTS_PER_DEGREE = 160; //Counts on odometry wheel per inch of distance
+
     private static final double DRIVE_SPEED = 0.5; //Speed of wheel
     private static final double STRAFE_SPEED = 0.4;
 
@@ -68,6 +67,7 @@ public class AutoRed extends LinearOpMode {
     //Other variables
     private static int rings = 0;    //Ring count variable for pathing
     private static int heldRings = 3; // Amount of held rings in robot
+    private static int detectionTries = 10; // Amount of held rings in robot
 
     /** Motor declarations */
     private DcMotor leftFrontDrive;
@@ -80,9 +80,6 @@ public class AutoRed extends LinearOpMode {
     private DcMotor flyWheel;
 
     /** Servo declarations */
-    //private Servo ringStopper;
-    //this servo is not currently part of the design
-    //private Servo intakeRelease;
     private CRServo ringStopper;
     private CRServo intakeRelease;
     private Servo rightServo;
@@ -154,18 +151,19 @@ public class AutoRed extends LinearOpMode {
         waitForStart();
 
             /* Autonomous section */
-
             //Turn on flywheel to allow spinup time
             flyWheel.setPower(FLYWHEEL_POWERSHOT);
             //Drive to see rings - Encoder Drive
-            encoderDriveY(DRIVE_SPEED, 30, 5);
+
+            encoderDriveY(DRIVE_SPEED, 33, 5);
+            encoderDriveX(STRAFE_SPEED, -2, 1);
             //Detect Ring Stack - Detect Rings
             detectRings();
             //Drive to power shot shooting location
-            encoderDriveX(STRAFE_SPEED, -70, 5);
+            encoderDriveX(STRAFE_SPEED, -35, 5);
             //Release intake servo during movement
             intakeRelease.setPower(INTAKE_RELEASE_POWER);
-            encoderDriveY(DRIVE_SPEED, 31, 5);
+            encoderDriveY(DRIVE_SPEED, 32, 5);
             intakeRelease.setPower(0);
             //Power Shots  - Shoot 1 ring 3 times
             //Raise fire blocker
@@ -184,24 +182,21 @@ public class AutoRed extends LinearOpMode {
         shootRings(1);
 
             //Determine where to place wobble goal and next autonomous steps
-
             if (rings == 0) {//0 Rings
                 //Drive to wobble goal deposit area
-                encoderDriveX(STRAFE_SPEED, 55, 5);
-                encoderDriveY(DRIVE_SPEED, -10, 1);
+                encoderDriveX(STRAFE_SPEED, 50, 5);
+                encoderRotate(STRAFE_SPEED,90,3);
                 //Drop wobble goal
                 dropWobbleGoal();
-                //Park on line
-                encoderDriveY(DRIVE_SPEED, 3, 1);
+                //Stay parked on line
             } else if (rings == 1) {//1 Ring
                 //Drive to wobble goal deposit area
-                encoderDriveX(STRAFE_SPEED, 26, 3);
+                encoderDriveX(STRAFE_SPEED, 36, 3);
                 encoderDriveY(DRIVE_SPEED, 25, 3);
                 //Drop wobble goal
                 dropWobbleGoal();
                 //Grab last ring for shooting
                 encoderDriveY(DRIVE_SPEED, -25, 3);
-                encoderDriveX(STRAFE_SPEED, -6, 1);
                 intakeWheelDrive(DRIVE_SPEED, -35, 6);
                 heldRings = 1;
                 //Drive to goal shooting location
@@ -212,7 +207,7 @@ public class AutoRed extends LinearOpMode {
                 encoderDriveY(DRIVE_SPEED, 5, 1);
             } else { //4 Rings
                 //Drive to wobble goal deposit area
-                encoderDriveX(STRAFE_SPEED, 55, 5);
+                encoderDriveX(STRAFE_SPEED, 50, 5);
                 encoderDriveY(DRIVE_SPEED, 48, 5);
                 //Drop wobble goal
                 dropWobbleGoal();
@@ -238,24 +233,23 @@ public class AutoRed extends LinearOpMode {
             //Turn flywheel off
             flyWheel.setPower(0);
 
-
-        /*If: 4 rings
+        /** Autonomous Paths Notes */
+        /*
+        If: 4 rings
         Deposit wobble goal far - Open Wobble Claw
         Grab Rings - Intake Wheel Drive
         Shoot high goal - Shoot Rings
         Grab Last ring - Intake Wheel Drive
         Shoot high goal - Shoot Rings
         Park on line - Encoder Drive
-        */
 
-        /*If: 1 ring
+        If: 1 ring
         Deposit wobble goal middle - Open Wobble Claw
         Grab Ring - Intake Wheel Drive
         Shoot high goal - Shoot Rings
         Park on line - Encoder Drive
-        */
 
-        /*If: No Rings
+        If: No Rings
         Deposit wobble goal closest - Open Wobble Claw
         Park on line - Encoder Drive
         */
@@ -350,10 +344,64 @@ public class AutoRed extends LinearOpMode {
             rightFrontDrive.setPower(0);
             leftRearDrive.setPower(0);
             rightRearDrive.setPower(0);
-                  sleep(250);   // optional pause after each move
+            //      sleep(250);   // optional pause after each move
             }
         }
 
+        public void encoderRotate( double speed, double degrees, double timeoutS){
+            int newLTarget;
+            int newRTarget;
+            double leftSpeed;
+            double rightSpeed;
+
+            rightRearDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            leftRearDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            // Determine new target position, and pass to motor controller
+            //This will be target position for both motors but will be determined by the left motor
+            newLTarget = leftFrontDrive.getCurrentPosition() + (int) (degrees * COUNTS_PER_DEGREE );
+            newRTarget = leftFrontDrive.getCurrentPosition() - (int) (degrees * COUNTS_PER_DEGREE);
+
+            // Ensure that the opmode is still active
+            if (opModeIsActive()) {
+                if(degrees > 0) {
+
+                    while (opModeIsActive() && (leftFrontDrive.getCurrentPosition() <= newLTarget || -rightFrontDrive.getCurrentPosition() >= newRTarget && (runtime.seconds() < timeoutS))) {
+                        leftSpeed = -speed;
+                        rightSpeed = speed;
+
+                        leftFrontDrive.setPower(leftSpeed);
+                        leftRearDrive.setPower(leftSpeed);
+                        rightFrontDrive.setPower(rightSpeed);
+                        rightRearDrive.setPower(rightSpeed);
+
+                    }
+                }else{
+                    while (opModeIsActive() && (leftFrontDrive.getCurrentPosition() >= newLTarget || -rightFrontDrive.getCurrentPosition() <= newRTarget && (runtime.seconds() < timeoutS))) {
+                        leftSpeed = speed;
+                        rightSpeed = -speed;
+
+                        leftFrontDrive.setPower(leftSpeed);
+                        leftRearDrive.setPower(leftSpeed);
+                        rightFrontDrive.setPower(rightSpeed);
+                        rightRearDrive.setPower(rightSpeed);
+
+                    }
+            }
+                leftFrontDrive.setPower(0);
+                rightFrontDrive.setPower(0);
+                leftRearDrive.setPower(0);
+                rightRearDrive.setPower(0);
+
+            }
+        }
         /** Strafe with encoders*/
         public void encoderDriveX(double speed, double inches, double timeoutS) {
         int newTarget;
@@ -396,9 +444,34 @@ public class AutoRed extends LinearOpMode {
             leftRearDrive.setPower(0);
             rightRearDrive.setPower(0);
             sleep(250);   // optional pause after each move
+            alignYEncoders();
         }
     }
 
+        /** Straighten wheels according to Y encoders*/
+        public void alignYEncoders(){
+            if(leftFrontDrive.getCurrentPosition() > -rightFrontDrive.getCurrentPosition()){
+                int newTarget = -rightFrontDrive.getCurrentPosition();
+                while(leftFrontDrive.getCurrentPosition() > newTarget){
+                    leftFrontDrive.setPower(DRIVE_SPEED/2);
+                    leftRearDrive.setPower(DRIVE_SPEED/2);
+                }
+            }else if(leftFrontDrive.getCurrentPosition() < -rightFrontDrive.getCurrentPosition()){
+                int newTarget = leftFrontDrive.getCurrentPosition();
+                while(newTarget< -rightFrontDrive.getCurrentPosition()){
+                    rightFrontDrive.setPower(DRIVE_SPEED/2);
+                    rightRearDrive.setPower(DRIVE_SPEED/2);
+                }
+            }else{
+
+            }
+            leftFrontDrive.setPower(0);
+            leftRearDrive.setPower(0);
+            rightFrontDrive.setPower(0);
+
+            rightRearDrive.setPower(0);
+          //  sleep(150);
+        }
         /** Driving  with intake on */
         public void intakeWheelDrive(double speed, double inches, double timeoutS){
             //Intake wheels on
@@ -416,12 +489,12 @@ public class AutoRed extends LinearOpMode {
         /** Detect the amount of rings*/
         public void detectRings(){
             //Webcam Detection changes rings to number of rings- defaults to 0
-           sleep(500);
-            if (tfod != null) {
+
+            if (tfod != null && detectionTries>=0) {
                 // getUpdatedRecognitions() will return null if no new information is available since
                 // the last time that call was made.
                 List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                if (updatedRecognitions != null && rings == -1) {
+                if (updatedRecognitions != null ) {
                     telemetry.addData("# Object Detected", updatedRecognitions.size());
                     // step through the list of recognitions and display boundary info.
                     int i = 0;
@@ -429,13 +502,24 @@ public class AutoRed extends LinearOpMode {
                         telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
                         if(recognition.getLabel().equalsIgnoreCase( "quad")){
                             rings = 4;
+                            telemetry.addLine("Quad");
+                            telemetry.update();
+
                         }else if(recognition.getLabel().equalsIgnoreCase("single")){
                             rings = 1;
+                            telemetry.addLine("Single");
+                            telemetry.update();
+
                         }else{
                             rings = 0;
+                            detectionTries--;
+                            sleep(100);
+                            telemetry.update();
+                            detectRings();
                         }
                     }
-                    telemetry.update();
+                }else {
+
                 }
             }
         }
