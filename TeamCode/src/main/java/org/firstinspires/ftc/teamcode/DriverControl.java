@@ -40,6 +40,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import java.sql.Time;
+import java.util.Timer;
+
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(name="Driver Control", group="Linear Opmode")
@@ -54,7 +57,7 @@ public class DriverControl extends LinearOpMode {
     private final double OPEN_LEFT_SERVO = 0.6;
     private final double OPEN_RIGHT_SERVO = 0.0;
     private final double WOBBLE_GOAL_DIST = 7.0;
-    private final double FLYWHEEL_POWER = 0.6;//This value may need additional logic if we need to vary the power.
+    private final double FLYWHEEL_POWER = 0.55;//This value may need additional logic if we need to vary the power.
     private final double FLYWHEEL_POWERSHOT = 0.5;
     private final double INTAKE_POWER1 = 0.75;// This value has not been tested.
     private final double INTAKE_POWER2 = 0.5;
@@ -83,6 +86,9 @@ public class DriverControl extends LinearOpMode {
 
     // Color sensor
     NormalizedColorSensor colorSensor;
+
+    //Timer
+    Timer timer = new Timer();
 
 
     @Override
@@ -143,6 +149,10 @@ public class DriverControl extends LinearOpMode {
         //These variables are necessary for slow mode to work.
         boolean isInSlowMode = false;
         boolean oldYbuttonState = false;
+        boolean oldBbuttonState = false;
+        boolean isFrontSwapped = false;
+        double numPasses = 0;
+        double ringStopperPower = 0.2;
 
         //Fly wheel power
         double flyWheelPower = 0.0;
@@ -184,6 +194,12 @@ public class DriverControl extends LinearOpMode {
             rotate = -gamepad1.right_stick_x;
             strafe = -gamepad1.left_stick_x;
 
+            //if the front of the robot is reversed negate the drive and strafe values
+            if(isFrontSwapped == true){
+                drive *=-1;
+                strafe *=-1;
+            }
+
             // Assign the power variables to the Game pad inputs
             leftFrontPower = drive + rotate + strafe;
             leftRearPower = drive + rotate - strafe;
@@ -194,6 +210,11 @@ public class DriverControl extends LinearOpMode {
             if(gamepad1.y == true && oldYbuttonState == false){
                 isInSlowMode = !isInSlowMode;
             }
+            //allow the user to toggle reversing the front of the robot
+            if(gamepad1.b == true &&oldBbuttonState == false){
+                isFrontSwapped = !isFrontSwapped;
+            }
+            oldBbuttonState = gamepad1.b;
             oldYbuttonState = gamepad1.y;
             //if we are in slow mode for grabbing the wobble goal
             if(isInSlowMode == true){
@@ -230,6 +251,10 @@ public class DriverControl extends LinearOpMode {
                 intakePower1 = INTAKE_POWER1;
                 intakePower2 = INTAKE_POWER2;
             }
+            else if(gamepad2.b == true){
+                intakePower1 = -INTAKE_POWER1;
+                intakePower2 = -INTAKE_POWER2;
+            }
             else{
                 intakePower1 = 0.0;
                 intakePower2 = 0.0;
@@ -248,7 +273,7 @@ public class DriverControl extends LinearOpMode {
                     leftServoPos = OPEN_LEFT_SERVO;
                     rightServoPos = OPEN_RIGHT_SERVO;
                 }
-                else if(gamepad2.b == true){
+                else if(gamepad2.right_stick_button == true){
                     leftServoPos = CLOSED_LEFT_SERVO;
                     rightServoPos = CLOSED_RIGHT_SERVO;
                 }
@@ -287,7 +312,15 @@ public class DriverControl extends LinearOpMode {
                 ringStopper.setPower(-RING_STOPPER_POWER);
             }
             else {
-                ringStopper.setPower(0.0);
+                if(numPasses >= 700){
+                    numPasses = 0;
+                    ringStopperPower *= -1;
+
+                }
+                else{
+                    numPasses++;
+                }
+                ringStopper.setPower(ringStopperPower);
             }
 
             //this section will be commented out until we have an intake release servo
