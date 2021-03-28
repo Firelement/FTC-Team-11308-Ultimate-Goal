@@ -40,7 +40,7 @@ public class AutoRed extends LinearOpMode {
 
     //Flywheel
     private final double FLYWHEEL_POWER = 0.55;//This value may need additional logic if we need to vary the power.
-    private final double FLYWHEEL_POWERSHOT = 0.5;
+    private final double FLYWHEEL_POWERSHOT = 0.45;
 
     //Intake
     private final double INTAKE_POWER1 = 0.75;// This value has not been tested.
@@ -57,17 +57,18 @@ public class AutoRed extends LinearOpMode {
 
     private static final double DRIVE_SPEED = 0.5; //Speed of wheel
     private static final double STRAFE_SPEED = 0.55;
-
-    private static double forwardSpin;
-    private static double backwardSpin;
+    private static double leftFrontPower;
+    private static double leftRearPower;
+    private static double rightFrontPower;
+    private static double rightRearPower;
     private static double DRIVE_ADJUSTMENT = 0; //Variable for power adjustment
     private static final double POWER_ADJUSTMENT_CONSTANT = 10000.0;    //Variable that dictates how much power adjustment will be added based on encoder difference in odometry
     private static final double POWER_ADJUSTMENT_CONSTANT_STRAFING = 3000.0;
 
     //Other variables
-    private static int rings = 0;    //Ring count variable for pathing
-    private static int heldRings = 3; // Amount of held rings in robot
-    private static int detectionTries = 10; // Amount of held rings in robot
+    private int rings = 0;    //Ring count variable for pathing
+    private int heldRings = 3; // Amount of held rings in robot
+    private int detectionTries = 10; // Amount of held rings in robot
 
     /** Motor declarations */
     private DcMotor leftFrontDrive;
@@ -159,16 +160,17 @@ public class AutoRed extends LinearOpMode {
             //Detect Ring Stack - Detect Rings
             detectRings();
             //Drive to power shot shooting location
-            encoderDriveX(STRAFE_SPEED, -32, 5);
+            encoderDriveX(STRAFE_SPEED, -31, 5);
             //Release intake servo during movement
             intakeRelease.setPower(INTAKE_RELEASE_POWER);
-            encoderDriveY(DRIVE_SPEED, 27, 5);
+            encoderDriveY(DRIVE_SPEED, 29, 5);
             intakeRelease.setPower(0);
             //Power Shots  - Shoot 1 ring 3 times
             //Raise fire blocker
             ringStopper.setPower(RING_STOPPER_POWER);
             sleep(500);
             ringStopper.setPower(0);
+            encoderDriveX(STRAFE_SPEED, -2, 1);
             //Shoot ring 1
         shootRings(1);
         //Line up next shot
@@ -184,7 +186,7 @@ public class AutoRed extends LinearOpMode {
             if (rings == 0) {//0 Rings
                 //Drive to wobble goal deposit area
                 encoderDriveX(STRAFE_SPEED, 50, 5);
-                encoderDriveY(DRIVE_SPEED, 4, 1);
+                encoderDriveY(DRIVE_SPEED, 7, 1);
                 encoderRotate(STRAFE_SPEED,90,3);
                 //Drop wobble goal
                 dropWobbleGoal();
@@ -196,8 +198,8 @@ public class AutoRed extends LinearOpMode {
                 //Drop wobble goal
                 dropWobbleGoal();
                 //Grab last ring for shooting
-                encoderDriveX(STRAFE_SPEED, -5,1);
-                intakeWheelDrive(DRIVE_SPEED, -35, 6);
+                encoderDriveX(STRAFE_SPEED, -3,1);
+                intakeWheelDrive(DRIVE_SPEED, -45, 6);
                 heldRings = 1;
                 //Drive to goal shooting location
                 encoderDriveY(DRIVE_SPEED, 25, 6);
@@ -206,19 +208,21 @@ public class AutoRed extends LinearOpMode {
                 //Shoot ring
                 shootRings(1);
                 //Park on line
-                encoderDriveY(DRIVE_SPEED, 5, 1);
+                encoderDriveY(DRIVE_SPEED, 10, 1);
             } else { //4 Rings
                 //Drive to wobble goal deposit area
-                encoderDriveX(STRAFE_SPEED, 60, 5);
-                encoderDriveY(DRIVE_SPEED, 44, 5);
+                encoderDriveX(STRAFE_SPEED, 82, 5);
+                encoderDriveX(STRAFE_SPEED, -1, 5);
+                encoderDriveY(DRIVE_SPEED, 40, 5);
                 //Drop wobble goal
                 dropWobbleGoal();
                 //Grab last ring for shooting
-                encoderDriveY(DRIVE_SPEED, -48, 3);
-                encoderDriveX(STRAFE_SPEED, -28, 1);
+                encoderDriveY(DRIVE_SPEED, -37, 3);
+                encoderDriveX(STRAFE_SPEED, -65, 1);
                 intakeWheelDrive(DRIVE_SPEED, -35, 6);
+                intakeWheelDrive(DRIVE_SPEED,-10,2);
                 heldRings = 3;
-                encoderDriveY(DRIVE_SPEED, 40, 6);
+                encoderDriveY(DRIVE_SPEED, 55, 6);
 
               /* Too little time, Possibly will add back if other sections sped up
                  //Drive to goal shooting location
@@ -407,11 +411,12 @@ public class AutoRed extends LinearOpMode {
 
             }
         }
+
         /** Strafe with encoders*/
         public void encoderDriveX(double speed, double inches, double timeoutS) {
-        int newTarget;
+            int newTarget;
 
-        // Ensure that the opmode is still active
+            // Ensure that the opmode is still active
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
@@ -422,24 +427,69 @@ public class AutoRed extends LinearOpMode {
 
             if (rightRearDrive.getCurrentPosition() > newTarget) { //If current position is larger than new target, robot goes right
 
-                while (rightRearDrive.getCurrentPosition() >= newTarget && (runtime.seconds() < timeoutS) && opModeIsActive()) {
-                    forwardSpin = speed;
-                    backwardSpin = -speed;
+                while (rightRearDrive.getCurrentPosition() >= newTarget  && (runtime.seconds() < timeoutS) && opModeIsActive()) {
+                    leftFrontPower = speed;
+                    rightFrontPower = -speed;
+                    leftRearPower = -speed;
+                    rightRearPower = speed;
+                    /*
+                    //Dynamically scale speed based on difference between encoders
+                    DRIVE_ADJUSTMENT = (leftRearDrive.getCurrentPosition() + rightRearDrive.getCurrentPosition())/POWER_ADJUSTMENT_CONSTANT;
 
-                    leftFrontDrive.setPower(forwardSpin);
-                    rightFrontDrive.setPower(backwardSpin);
-                    leftRearDrive.setPower(backwardSpin);
-                    rightRearDrive.setPower(forwardSpin);
+                    leftFrontPower += DRIVE_ADJUSTMENT;
+                    leftRearPower += DRIVE_ADJUSTMENT;
+                    rightFrontPower -= DRIVE_ADJUSTMENT;
+                    rightRearPower -= DRIVE_ADJUSTMENT;
+
+
+
+                    leftFrontPower = Range.clip(leftFrontPower, -1.0,1.0);
+                    leftRearPower = Range.clip(leftRearPower, -1.0,1.0);
+                    rightFrontPower = Range.clip(rightFrontPower, -1.0,1.0);
+                    rightRearPower = Range.clip(rightRearPower, -1.0,1.0);
+                    */
+                    leftFrontDrive.setPower(leftFrontPower);
+                    rightFrontDrive.setPower(rightFrontPower);
+                    leftRearDrive.setPower(leftRearPower);
+                    rightRearDrive.setPower(rightRearPower);
+
+                   // telemetry.addData("Front Encoder:", -leftRearDrive.getCurrentPosition());
+                    telemetry.addData("Back Encoder:", rightRearDrive.getCurrentPosition());
+                    telemetry.addData("Target Position:", newTarget);
+                    telemetry.addLine("Target Direction: Right");
+                    telemetry.update();
                 }
             } else { //If current position is smaller than new target, robot goes left
-                while (rightRearDrive.getCurrentPosition() <= newTarget && (runtime.seconds() < timeoutS) && opModeIsActive()) {
-                    forwardSpin = speed;
-                    backwardSpin = -speed;
+                while (rightRearDrive.getCurrentPosition() <= newTarget  && (runtime.seconds() < timeoutS) && opModeIsActive()) {
+                    leftFrontPower = -speed;
+                    rightFrontPower = speed;
+                    leftRearPower = speed;
+                    rightRearPower = -speed;
+                    /*
+                    //Dynamically scale speed based on difference between encoders
+                    DRIVE_ADJUSTMENT = (leftRearDrive.getCurrentPosition() + rightRearDrive.getCurrentPosition())/POWER_ADJUSTMENT_CONSTANT;
 
-                    leftFrontDrive.setPower(backwardSpin);
-                    rightFrontDrive.setPower(forwardSpin);
-                    leftRearDrive.setPower(forwardSpin);
-                    rightRearDrive.setPower(backwardSpin);
+                    leftFrontPower -= DRIVE_ADJUSTMENT;
+                    leftRearPower -= DRIVE_ADJUSTMENT;
+                    rightFrontPower += DRIVE_ADJUSTMENT;
+                    rightRearPower += DRIVE_ADJUSTMENT;
+
+                    leftFrontPower = Range.clip(leftFrontPower, -1.0,1.0);
+                    leftRearPower = Range.clip(leftRearPower, -1.0,1.0);
+                    rightFrontPower = Range.clip(rightFrontPower, -1.0,1.0);
+                    rightRearPower = Range.clip(rightRearPower, -1.0,1.0);
+
+                    */
+                    leftFrontDrive.setPower(leftFrontPower);
+                    rightFrontDrive.setPower(rightFrontPower);
+                    leftRearDrive.setPower(leftRearPower);
+                    rightRearDrive.setPower(rightRearPower);
+
+                   // telemetry.addData("Front Encoder:", -leftRearDrive.getCurrentPosition());
+                    telemetry.addData("Back Encoder:", rightRearDrive.getCurrentPosition());
+                    telemetry.addData("Target Position:", newTarget);
+                    telemetry.addLine("Target Direction: Left");
+                    telemetry.update();
                 }
             }
 
@@ -562,47 +612,6 @@ public class AutoRed extends LinearOpMode {
             ringStopper.setPower(0);
         }
 
-    public void shootPowerShot(int amountToShoot, double inches, double speed){
-        int newTarget = rightRearDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
-        forwardSpin = speed ;
-        backwardSpin = -speed;
-
-        //Launch rings while driving
-
-        while (rightRearDrive.getCurrentPosition() >= newTarget && opModeIsActive()) {
-            flyWheel.setPower(FLYWHEEL_POWERSHOT);
-            intake1.setPower(INTAKE_POWER1);
-            intake2.setPower(INTAKE_POWER2);
-
-            leftFrontDrive.setPower(forwardSpin);
-            rightFrontDrive.setPower(backwardSpin);
-            leftRearDrive.setPower(backwardSpin);
-            rightRearDrive.setPower(forwardSpin);
-
-                if (heldRings > 1) {// if not last ring
-                    //Shoot ring by continuing to run intake
-                    sleep(500);
-                    heldRings--;
-                } else if(heldRings == 1){// if last ring
-                    //Rotate fire blocker to launch last ring
-                    ringStopper.setPower(RING_STOPPER_POWER);
-                    heldRings--;
-                    leftFrontDrive.setPower(0);
-                    rightFrontDrive.setPower(0);
-                    leftRearDrive.setPower(0);
-                    rightRearDrive.setPower(0);
-                    sleep(1500);
-                }else {
-
-                }
-
-        }
-        ringStopper.setPower(0);
-        leftFrontDrive.setPower(0);
-        rightFrontDrive.setPower(0);
-        leftRearDrive.setPower(0);
-        rightRearDrive.setPower(0);
-    }
         /** Drop the wobble goal*/
         public void dropWobbleGoal(){
             wobbleLifter.setPower(LIFT_POWER);
