@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -23,20 +22,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
-import java.sql.Driver;
 import java.util.List;
 
-@Autonomous(name="Auto Red", group="Pushbot")
-public class AutoRed extends LinearOpMode {
+@Autonomous(name="No Cam Auto Red", group="Pushbot")
+public class AutoRedNoCam extends LinearOpMode {
 
-    /** Variables for ring detection */
-    private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
-    private static final String LABEL_FIRST_ELEMENT = "Quad";
-    private static final String LABEL_SECOND_ELEMENT = "Single";
-    private static final String VUFORIA_KEY =
-            " AaDyemX/////AAABmTAtC2ONB0wHkUhRXShDQ5YMqzoOqj1zpW+eTxr9Vmb+zLP/5S8iHdsIsvHZDQDOgEQ8Q3j+Ke6cIggKMyK/1dGYnFe3e9oa/E/VCSqAwxd5EZZzKTEHnc+JATc5WBgX9zhdEFFZuuo1Xsn8Hpo93GCQC5n5q4uRhEAt7XvqRpj7qFT48aKhv2yHCraHMdrcD9NHXtr1CNpS53Qi9k/SrRvn9PdKL4taAey2C53xqvQ1j/+xh3Eh+3ORnMwaySnccNf145o9f5yv4fquBGYJfity4VIblSqAyg3VX/S/4aj8UmPe3T04Idl64z//OpS3ZXfozz/4Gk1qA9nW6twomt6e4kLrp3nLLiM6NOQGC1/e";
-    private VuforiaLocalizer vuforia;
-    private TFObjectDetector tfod;
+
 
     //Wobble Arm
     private final double LIFT_POWER = 0.8;
@@ -105,12 +96,6 @@ public class AutoRed extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        // Activate TensorFlow Object Detection before we wait for the start command
-        initVuforia();
-        initTfod();
-        if (tfod != null) {
-            tfod.activate();
-        }
 
         //Initialize the Motors
         leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
@@ -126,6 +111,7 @@ public class AutoRed extends LinearOpMode {
         //ringStopper = hardwareMap.get(Servo.class,"ring_stopper");
         intakeRelease = hardwareMap.get(CRServo.class, "intake_release");
         ringStopper = hardwareMap.get(CRServo.class, "ring_stopper");
+        intakeRelease = hardwareMap.get(CRServo.class, "intake_release");
         leftServo = hardwareMap.get(Servo.class, "leftServo");
         rightServo = hardwareMap.get(Servo.class, "rightServo");
 
@@ -195,8 +181,6 @@ public class AutoRed extends LinearOpMode {
             //Drive to see rings - Encoder Drive
             encoderDriveY(DRIVE_SPEED, 31, 5);
             encoderDriveX(STRAFE_SPEED, -5, 1);
-            //Detect Ring Stack - Detect Rings
-            detectRings();
             //Drive to power shot shooting location
             encoderDriveX(STRAFE_SPEED, -31, 5);
             //Release intake servo during movement
@@ -220,8 +204,7 @@ public class AutoRed extends LinearOpMode {
         //Shoot final ring
         shootRings(1);
 
-            //Determine where to place wobble goal and next autonomous steps
-            if (rings == 0) {//0 Rings
+            //0 Rings
                 //Drive to wobble goal deposit area
                 encoderDriveX(STRAFE_SPEED, 50, 5);
                 encoderDriveY(DRIVE_SPEED, 7, 1);
@@ -257,85 +240,6 @@ public class AutoRed extends LinearOpMode {
                 rotate(60, DRIVE_SPEED);
                 dropWobbleGoal();
                 //Parked on line
-
-            } else if (rings == 1) {//1 Ring
-                //Drive to wobble goal deposit area
-                encoderDriveX(STRAFE_SPEED, 47, 3);
-                encoderDriveY(DRIVE_SPEED, 15, 3);
-                //Drop wobble goal
-                dropWobbleGoal();
-                //Grab last ring for shooting
-                encoderDriveX(STRAFE_SPEED, -4,1);
-                intakeWheelDrive(DRIVE_SPEED, -45, 6);
-
-                heldRings = 1;
-                //Drive to goal shooting location
-                encoderDriveY(DRIVE_SPEED, 25, 6);
-                intake1.setPower(INTAKE_POWER1);
-                intake2.setPower(INTAKE_POWER2);
-                flyWheel.setPower(FLYWHEEL_POWER);
-                encoderDriveX(STRAFE_SPEED, -15,1);
-                //Shoot ring
-                shootRings(1);
-                //Park on line
-                encoderDriveY(DRIVE_SPEED, 10, 1);
-            } else { //4 Rings
-                //Drive to wobble goal deposit area
-                encoderDriveX(STRAFE_SPEED, 82, 4);
-                encoderDriveX(STRAFE_SPEED, -0.25, 1);
-                encoderDriveY(DRIVE_SPEED, 48, 5);
-                //Drop wobble goal
-                dropWobbleGoal();
-                //Grab last ring for shooting
-                encoderDriveY(DRIVE_SPEED, -30, 3);
-               // encoderDriveX(STRAFE_SPEED, -37, 2);
-               /* Too little time, Possibly will add back if other sections sped up
-                intakeWheelDrive(DRIVE_SPEED, -35, 6);
-                intakeWheelDrive(DRIVE_SPEED,-10,2);
-                heldRings = 3;
-                encoderDriveY(DRIVE_SPEED, 55, 6);
-
-
-                 //Drive to goal shooting location
-                encoderDriveY(DRIVE_SPEED, 35, 6);
-                //Shoot rings
-                shootRings(3);
-                //intake last ring
-                intakeWheelDrive(DRIVE_SPEED, -35, 6);
-                heldRings = 1;
-                //Drive to goal shooting location
-                encoderDriveY(DRIVE_SPEED, 35, 6);
-                //Shoot last ring
-                shootRings(1);
-                //Park on line
-                encoderDriveY(DRIVE_SPEED, 5, 1);*/
-
-            }
-            //Turn flywheel off
-        //    flyWheel.setPower(0);
-
-        /** Autonomous Paths Notes */
-        /*
-        If: 4 rings
-        Deposit wobble goal far - Open Wobble Claw
-        Grab Rings - Intake Wheel Drive
-        Shoot high goal - Shoot Rings
-        Grab Last ring - Intake Wheel Drive
-        Shoot high goal - Shoot Rings
-        Park on line - Encoder Drive
-
-        If: 1 ring
-        Deposit wobble goal middle - Open Wobble Claw
-        Grab Ring - Intake Wheel Drive
-        Shoot high goal - Shoot Rings
-        Park on line - Encoder Drive
-
-        If: No Rings
-        Deposit wobble goal closest - Open Wobble Claw
-        Park on line - Encoder Drive
-        */
-       //     telemetry.addData("Path", "Complete");
-         //   telemetry.update();
 
 
     }
@@ -426,72 +330,6 @@ public class AutoRed extends LinearOpMode {
             leftRearDrive.setPower(0);
             rightRearDrive.setPower(0);
             //      sleep(250);   // optional pause after each move
-            }
-        }
-
-        public void encoderRotate( double speed, double degrees, double timeoutS){
-            int newLTarget;
-            int newRTarget;
-            double leftSpeed;
-            double rightSpeed;
-            sleep(250);
-            rightRearDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            leftRearDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-            rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-            // Determine new target position, and pass to motor controller
-            //This will be target position for both motors but will be determined by the left motor
-            newLTarget = leftFrontDrive.getCurrentPosition() + (int) (degrees * COUNTS_PER_DEGREE );
-            newRTarget = leftFrontDrive.getCurrentPosition() - (int) (degrees * COUNTS_PER_DEGREE);
-
-            // Ensure that the opmode is still active
-            if (opModeIsActive()) {
-                if(degrees > 0) {
-
-                    while (opModeIsActive() && (leftFrontDrive.getCurrentPosition() <= newLTarget || -rightFrontDrive.getCurrentPosition() >= newRTarget )) {
-                        leftSpeed = -speed;
-                        rightSpeed = speed;
-
-                        leftFrontDrive.setPower(leftSpeed);
-                        leftRearDrive.setPower(leftSpeed);
-                        rightFrontDrive.setPower(rightSpeed);
-                        rightRearDrive.setPower(rightSpeed);
-                        telemetry.addData("Left Encoder:", leftFrontDrive.getCurrentPosition());
-                        telemetry.addData("Right Encoder:", -rightFrontDrive.getCurrentPosition());
-                        telemetry.addData("Target Position L:", newLTarget);
-                        telemetry.addData("Target Position R:", newRTarget);
-                        telemetry.update();
-
-
-                    }
-                }else{
-                    while (opModeIsActive() && (leftFrontDrive.getCurrentPosition() >= newLTarget || -rightFrontDrive.getCurrentPosition() <= newRTarget )) {
-                        leftSpeed = speed;
-                        rightSpeed = -speed;
-
-                        leftFrontDrive.setPower(leftSpeed);
-                        leftRearDrive.setPower(leftSpeed);
-                        rightFrontDrive.setPower(rightSpeed);
-                        rightRearDrive.setPower(rightSpeed);
-                        telemetry.addData("Left Encoder:", leftFrontDrive.getCurrentPosition());
-                        telemetry.addData("Right Encoder:",-rightFrontDrive.getCurrentPosition());
-                        telemetry.addData("Target Position L:", newLTarget);
-                        telemetry.addData("Target Position R:", newRTarget);
-                        telemetry.update();
-
-                    }
-            }
-                leftFrontDrive.setPower(0);
-                rightFrontDrive.setPower(0);
-                leftRearDrive.setPower(0);
-                rightRearDrive.setPower(0);
-
             }
         }
 
@@ -610,6 +448,7 @@ public class AutoRed extends LinearOpMode {
             rightRearDrive.setPower(0);
           //  sleep(150);
         }
+
         /** Driving  with intake on */
         public void intakeWheelDrive(double speed, double inches, double timeoutS){
             //Intake wheels on
@@ -625,51 +464,6 @@ public class AutoRed extends LinearOpMode {
             //Intake wheels off
             intake1.setPower(0);
             intake2.setPower(0);
-        }
-
-        /** Detect the amount of rings*/
-        public void detectRings(){
-            //Webcam Detection changes rings to number of rings- defaults to 0
-            sleep(500);
-            telemetry.addLine("Detection Tried");
-            if (detectionTries>=0) {
-                // getUpdatedRecognitions() will return null if no new information is available since
-                // the last time that call was made.
-                List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                if (updatedRecognitions != null ) {
-                    telemetry.addData("# Object Detected", updatedRecognitions.size());
-                    // step through the list of recognitions and display boundary info.
-                    int i = 0;
-                    for (Recognition recognition : updatedRecognitions) {
-                        telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                        if(recognition.getLabel().equalsIgnoreCase( "quad")){
-                            rings = 4;
-                            telemetry.addLine("Quad");
-                            telemetry.update();
-
-                        }else if(recognition.getLabel().equalsIgnoreCase("single")){
-                            rings = 1;
-                            telemetry.addLine("Single");
-                            telemetry.update();
-
-                        }else{
-                            rings = 0;
-                            detectionTries--;
-                            sleep(100);
-                            telemetry.update();
-                            detectRings();
-                        }
-                    }
-                }else {
-                    rings = 0;
-                    detectionTries--;
-                    sleep(100);
-                    telemetry.update();
-                    detectRings();
-                }
-
-            }
-            telemetry.update();
         }
 
         /** Shoot rings*/
@@ -815,31 +609,7 @@ public class AutoRed extends LinearOpMode {
 
         }
 
-    /** Initialize the Vuforia localization engine */
-    private void initVuforia() {
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
-    }
-
-    /**Initialize the TensorFlow Object Detection engine */
-    private void initTfod() {
-        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minResultConfidence = 0.8f;
-        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
-    }
     /** Code used for IMU*/
     private double getAngle() {
         // We experimentally determined the Z axis is the axis we want to use for heading angle.
